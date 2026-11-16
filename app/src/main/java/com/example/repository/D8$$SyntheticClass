@@ -1,0 +1,115 @@
+// Reconstructed from APK DEX metadata & bytecode (D8$$SyntheticClass)
+package com.example.repository
+
+import android.content.Context
+
+class BlocklistRepository$$ExternalSyntheticLambda0 : Runnable {
+    val f$0: Context
+    val f$1: String
+
+    constructor(p0: Context, p1: String) {
+        // Fields: BlocklistRepository$$ExternalSyntheticLambda0.f$0, BlocklistRepository$$ExternalSyntheticLambda0.f$1
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: BlocklistRepository$$ExternalSyntheticLambda0.f$0, BlocklistRepository$$ExternalSyntheticLambda0.f$1
+        // -> BlocklistRepository.loadAndSyncBlockedNumbers$lambda$15$lambda$14()
+    }
+
+}
+
+class BlocklistRepository$$ExternalSyntheticLambda1 : Runnable {
+    val f$0: Context
+    val f$1: String
+
+    constructor(p0: Context, p1: String) {
+        // Fields: BlocklistRepository$$ExternalSyntheticLambda1.f$0, BlocklistRepository$$ExternalSyntheticLambda1.f$1
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: BlocklistRepository$$ExternalSyntheticLambda1.f$0, BlocklistRepository$$ExternalSyntheticLambda1.f$1
+        // -> BlocklistRepository.loadAndSyncBlockedNumbers$lambda$19$lambda$18()
+    }
+
+}
+
+class BlocklistRepository$$ExternalSyntheticLambda2 : Function1 {
+    val f$0: String
+
+    constructor(p0: String) {
+        // Fields: BlocklistRepository$$ExternalSyntheticLambda2.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: BlocklistRepository$$ExternalSyntheticLambda2.f$0
+        // -> BlocklistRepository.blockNumber$lambda$27()
+        // -> Boolean.valueOf()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class CallLogRepository$$ExternalSyntheticLambda0 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> CallLogRepository.loadCallLogs$lambda$4()
+        // -> Boolean.valueOf()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class CallLogRepository$$ExternalSyntheticLambda1 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> Long.longValue()
+        // -> CallLogRepository.deleteCallLogIds$lambda$15()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class ContactsRepository$$ExternalSyntheticLambda0 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> ContactsRepository.shareContacts$lambda$54$lambda$53()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class ContactsRepository$$ExternalSyntheticLambda1 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> ContactsRepository.shareContacts$lambda$56()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class ContactsRepository$$ExternalSyntheticLambda2 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> ContactsRepository.findDuplicateContactGroups$lambda$73$lambda$72()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}

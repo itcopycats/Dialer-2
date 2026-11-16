@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:left="0.00dp"
+        android:top="0.00dp"
+        android:right="0.00dp"
+        android:bottom="0.00dp">
+        <shape android:shape="0">
+            <solid android:color="@android:0x0106000d">
+            </solid>
+            <stroke
+                android:width="0.00dp"
+                android:color="#4D4284F2">
+            </stroke>
+        </shape>
+    </item>
+    <item android:drawable="@drawable/common_google_signin_btn_text_light_normal">
+    </item>
+</layer-list>

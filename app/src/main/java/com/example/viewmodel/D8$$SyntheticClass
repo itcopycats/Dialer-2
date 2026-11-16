@@ -1,0 +1,563 @@
+// Reconstructed from APK DEX metadata & bytecode (D8$$SyntheticClass)
+package com.example.viewmodel
+
+import com.example.model.CallMergeMode
+import com.example.model.CallWaitingAlertMode
+import com.example.model.CallWindowPreference
+import com.example.model.IncomingVibrationPattern
+import com.example.model.ProximityMode
+import com.example.model.RecordingEngine
+import com.example.model.RecordingMode
+import com.example.model.RecordingSaveLocation
+import com.example.ui.theme.ThemeMode
+
+class DialerViewModel$$ExternalSyntheticLambda0 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> DialerViewModel.resetFloatingWindowLayout$lambda$83()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda1 : Function1 {
+    val f$0: ThemeMode
+
+    constructor(p0: ThemeMode) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda1.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda1.f$0
+        // -> DialerViewModel.setThemeMode$lambda$50()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda10 : Function1 {
+    val f$0: RecordingSaveLocation
+    val f$1: String
+
+    constructor(p0: RecordingSaveLocation, p1: String) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda10.f$0, DialerViewModel$$ExternalSyntheticLambda10.f$1
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda10.f$0, DialerViewModel$$ExternalSyntheticLambda10.f$1
+        // -> DialerViewModel.setRecordingSaveLocation$lambda$58()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda11 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda11.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda11.f$0
+        // -> DialerViewModel.setRootEnhancements$lambda$67()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda12 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda12.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda12.f$0
+        // -> DialerViewModel.setBlockForeignNumbers$lambda$61()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda13 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda13.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda13.f$0
+        // -> DialerViewModel.setBlockUnsavedNumbers$lambda$62()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda14 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda14.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda14.f$0
+        // -> DialerViewModel.setEnableDuplicateMergeSuggestions$lambda$71()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda15 : Function1 {
+    val f$0: Float
+
+    constructor(p0: Float) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda15.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda15.f$0
+        // -> DialerViewModel.setWaitingWindowHeightScale$lambda$82()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda16 : Function1 {
+    val f$0: Int
+
+    constructor(p0: Int) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda16.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda16.f$0
+        // -> DialerViewModel.setFloatingWindowWidthDp$lambda$79()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda17 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda17.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda17.f$0
+        // -> DialerViewModel.setAmoledPureBlack$lambda$51()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda18 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda18.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda18.f$0
+        // -> DialerViewModel.setShowRecordingsInCallDetails$lambda$59()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda19 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda19.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda19.f$0
+        // -> DialerViewModel.setDisableCustomInCallUi$lambda$55()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda2 : Function1 {
+    val f$0: CallMergeMode
+
+    constructor(p0: CallMergeMode) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda2.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda2.f$0
+        // -> DialerViewModel.setCallMergeMode$lambda$53()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda20 : Function1 {
+    val f$0: IncomingVibrationPattern
+
+    constructor(p0: IncomingVibrationPattern) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda20.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda20.f$0
+        // -> DialerViewModel.setIncomingVibrationPattern$lambda$75()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda21 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda21.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda21.f$0
+        // -> DialerViewModel.setIgnoreDefaultSim$lambda$69()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda22 : Function1 {
+    val f$0: String
+
+    constructor(p0: String) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda22.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda22.f$0
+        // -> DialerViewModel.removeBlockedPrefix$lambda$66()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda23 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda23.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda23.f$0
+        // -> DialerViewModel.setShowBlockedWarningOnCallUi$lambda$77()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda24 : Function1 {
+    val f$0: String
+
+    constructor(p0: String) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda24.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda24.f$0
+        // -> DialerViewModel.addBlockedPrefix$lambda$64()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda25 : Function0 {
+    val f$0: DialerViewModel
+
+    constructor(p0: DialerViewModel) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda25.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda25.f$0
+        // -> DialerViewModel.triggerSecretCode$lambda$31()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda26 : Function1 {
+    val f$0: CallWindowPreference
+
+    constructor(p0: CallWindowPreference) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda26.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda26.f$0
+        // -> DialerViewModel.setIncomingWindowMode$lambda$54()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda27 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda27.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda27.f$0
+        // -> DialerViewModel.setEnableProximitySensor$lambda$72()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda28 : Function1 {
+    val f$0: CallWaitingAlertMode
+
+    constructor(p0: CallWaitingAlertMode) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda28.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda28.f$0
+        // -> DialerViewModel.setCallWaitingAlertMode$lambda$76()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda29 : Function2 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // -> Boolean.booleanValue()
+        // -> DialerViewModel.mergeContacts$lambda$36()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda3 : Function1 {
+    val f$0: RecordingEngine
+
+    constructor(p0: RecordingEngine) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda3.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda3.f$0
+        // -> DialerViewModel.setRecordingEngine$lambda$57()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda30 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda30.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda30.f$0
+        // -> DialerViewModel.setShizukuEnhancements$lambda$68()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda31 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda31.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda31.f$0
+        // -> DialerViewModel.setAskSimOnRecentsCall$lambda$70()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda32 : Function1 {
+    val f$0: ProximityMode
+
+    constructor(p0: ProximityMode) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda32.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda32.f$0
+        // -> DialerViewModel.setProximityMode$lambda$73()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda33 : Function1 {
+    val f$0: Int
+
+    constructor(p0: Int) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda33.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda33.f$0
+        // -> DialerViewModel.setWaitingWindowWidthDp$lambda$81()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda34 : Function1 {
+    val f$0: Float
+
+    constructor(p0: Float) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda34.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda34.f$0
+        // -> DialerViewModel.setFloatingWindowHeightScale$lambda$80()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda4 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda4.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda4.f$0
+        // -> DialerViewModel.setEnableDialpadTones$lambda$74()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda5 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda5.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda5.f$0
+        // -> DialerViewModel.setBlockUnknownNumbers$lambda$60()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda6 : Function1 {
+    val f$0: RecordingMode
+
+    constructor(p0: RecordingMode) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda6.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda6.f$0
+        // -> DialerViewModel.setRecordingMode$lambda$56()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda7 : Function1 {
+    val f$0: Boolean
+
+    constructor(p0: Boolean) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda7.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda7.f$0
+        // -> DialerViewModel.setUseDynamicColor$lambda$52()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda8 : Function1 {
+    val f$0: Float
+
+    constructor(p0: Float) {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda8.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: DialerViewModel$$ExternalSyntheticLambda8.f$0
+        // -> DialerViewModel.setFloatingWindowAlpha$lambda$78()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class DialerViewModel$$ExternalSyntheticLambda9 : Function2 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // -> Boolean.booleanValue()
+        // -> DialerViewModel.copyOrMoveContacts$lambda$37()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}

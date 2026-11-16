@@ -1,0 +1,25 @@
+// Reconstructed from APK DEX metadata & bytecode (D8$$SyntheticClass)
+package com.example.ui.theme
+
+class ThemeKt$$ExternalSyntheticLambda0 : Function2 {
+    val f$0: ThemeMode
+    val f$1: Boolean
+    val f$2: Boolean
+    val f$3: Boolean
+    val f$4: Function2
+    val f$5: Int
+    val f$6: Int
+
+    constructor(p0: ThemeMode, p1: Boolean, p2: Boolean, p3: Boolean, p4: Function2, p5: Int, p6: Int) {
+        // Fields: ThemeKt$$ExternalSyntheticLambda0.f$0, ThemeKt$$ExternalSyntheticLambda0.f$1, ThemeKt$$ExternalSyntheticLambda0.f$2, ThemeKt$$ExternalSyntheticLambda0.f$3, ThemeKt$$ExternalSyntheticLambda0.f$4, ThemeKt$$ExternalSyntheticLambda0.f$5, ThemeKt$$ExternalSyntheticLambda0.f$6
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: ThemeKt$$ExternalSyntheticLambda0.f$0, ThemeKt$$ExternalSyntheticLambda0.f$1, ThemeKt$$ExternalSyntheticLambda0.f$2, ThemeKt$$ExternalSyntheticLambda0.f$3, ThemeKt$$ExternalSyntheticLambda0.f$4, ThemeKt$$ExternalSyntheticLambda0.f$5, ThemeKt$$ExternalSyntheticLambda0.f$6
+        // -> Integer.intValue()
+        // -> ThemeKt.MyApplicationTheme$lambda$0()
+        TODO("Decoded 15 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
