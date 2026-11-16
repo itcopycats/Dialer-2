@@ -1,0 +1,1324 @@
+// Reconstructed from APK DEX metadata & bytecode (D8$$SyntheticClass)
+package com.example.telecom
+
+import android.content.Context
+import android.telecom.Call
+import android.widget.FrameLayout
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
+import com.example.model.ActiveCallSnapshot
+import com.example.model.CallLifecycleState
+import com.example.model.CallNetworkBadge
+
+class CallStateManager$$ExternalSyntheticLambda0 : Runnable {
+    val f$0: String
+
+    constructor(p0: String) {
+        // Fields: CallStateManager$$ExternalSyntheticLambda0.f$0
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: CallStateManager$$ExternalSyntheticLambda0.f$0
+        // -> CallStateManager.performActualStartRecording$lambda$119$lambda$118()
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda1 : Function0 {
+    val f$0: Call
+    val f$1: Char
+
+    constructor(p0: Call, p1: Char) {
+        // Fields: CallStateManager$$ExternalSyntheticLambda1.f$0, CallStateManager$$ExternalSyntheticLambda1.f$1
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: CallStateManager$$ExternalSyntheticLambda1.f$0, CallStateManager$$ExternalSyntheticLambda1.f$1
+        // -> CallStateManager.sendDtmf$lambda$102()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda2 : Runnable {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: CallStateManager$$ExternalSyntheticLambda2.f$0
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: CallStateManager$$ExternalSyntheticLambda2.f$0
+        // -> CallStateManager.sendDtmf$lambda$104()
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda3 : Runnable {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // -> CallStateManager.onCallRemoved$lambda$30()
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda4 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> CallStateManager.performActualStartRecording$lambda$117()
+        // -> Boolean.valueOf()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda5 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> CallStateManager.performActualStartRecording$lambda$119()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda6 : Runnable {
+    val f$0: Context
+
+    constructor(p0: Context) {
+        // Fields: CallStateManager$$ExternalSyntheticLambda6.f$0
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: CallStateManager$$ExternalSyntheticLambda6.f$0
+        // -> CallStateManager.markVideoCallFailed$lambda$4()
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda7 : Runnable {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // -> CallStateManager.sendDtmf$lambda$102$lambda$101()
+    }
+
+}
+
+class CallStateManager$$ExternalSyntheticLambda8 : Runnable {
+    val f$0: Context
+
+    constructor(p0: Context) {
+        // Fields: CallStateManager$$ExternalSyntheticLambda8.f$0
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: CallStateManager$$ExternalSyntheticLambda8.f$0
+        // -> CallStateManager.startRecordingInternal$lambda$114()
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda0 : Function2 {
+    val f$0: FloatingCallOverlayService
+    val f$1: WindowManager$LayoutParams
+    val f$2: ComposeView
+    val f$3: FrameLayout
+
+    constructor(p0: FloatingCallOverlayService, p1: WindowManager$LayoutParams, p2: ComposeView, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda0.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda0.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda0.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda0.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda0.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda0.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda0.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda0.f$3
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118()
+        TODO("Decoded 12 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda1 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda1.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda1.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$116$lambda$115()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda10 : Function2 {
+    val f$0: FloatingCallOverlayService
+    val f$1: WindowManager$LayoutParams
+    val f$2: ComposeView
+    val f$3: FrameLayout
+
+    constructor(p0: FloatingCallOverlayService, p1: WindowManager$LayoutParams, p2: ComposeView, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda10.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda10.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda10.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda10.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda10.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda10.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda10.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda10.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$103$lambda$102()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda11 : Function2 {
+    val f$0: WindowManager$LayoutParams
+    val f$1: ComposeView
+    val f$2: FloatingCallOverlayService
+    val f$3: FrameLayout
+    val f$4: State
+    val f$5: MutableState
+    val f$6: State
+    val f$7: State
+
+    constructor(p0: WindowManager$LayoutParams, p1: ComposeView, p2: FloatingCallOverlayService, p3: FrameLayout, p4: State, p5: MutableState, p6: State, p7: State) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda11.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$3, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$4, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$5, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$6, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$7
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda11.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$3, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$4, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$5, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$6, FloatingCallOverlayService$$ExternalSyntheticLambda11.f$7
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65()
+        TODO("Decoded 16 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda12 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda12.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda12.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$14$lambda$13()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda13 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$36$lambda$35()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda14 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$38$lambda$37()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda15 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda15.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda15.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$40$lambda$39()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda16 : Function2 {
+    val f$0: WindowManager$LayoutParams
+    val f$1: ComposeView
+    val f$2: FloatingCallOverlayService
+    val f$3: FrameLayout
+
+    constructor(p0: WindowManager$LayoutParams, p1: ComposeView, p2: FloatingCallOverlayService, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda16.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda16.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda16.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda16.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda16.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda16.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda16.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda16.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$43$lambda$42()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda17 : Function1 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda17.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda17.f$0
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$45$lambda$44()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda18 : Function1 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda18.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda18.f$0
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$47$lambda$46()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda19 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$49$lambda$48()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda2 : Function2 {
+    val f$0: FloatingCallOverlayService
+    val f$1: WindowManager$LayoutParams
+    val f$2: ComposeView
+    val f$3: FrameLayout
+
+    constructor(p0: FloatingCallOverlayService, p1: WindowManager$LayoutParams, p2: ComposeView, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda2.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda2.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda2.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda2.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda2.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda2.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda2.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda2.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$85$lambda$84()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda20 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda20.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda20.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$51$lambda$50()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda21 : Function2 {
+    val f$0: WindowManager$LayoutParams
+    val f$1: ComposeView
+    val f$2: FloatingCallOverlayService
+    val f$3: FrameLayout
+
+    constructor(p0: WindowManager$LayoutParams, p1: ComposeView, p2: FloatingCallOverlayService, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda21.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda21.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda21.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda21.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda21.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda21.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda21.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda21.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$54$lambda$53()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda22 : Function2 {
+    val f$0: ActiveCallSnapshot
+    val f$1: MutableState
+    val f$2: FloatingCallOverlayService
+    val f$3: WindowManager$LayoutParams
+    val f$4: ComposeView
+    val f$5: FrameLayout
+    val f$6: State
+    val f$7: State
+    val f$8: State
+
+    constructor(p0: ActiveCallSnapshot, p1: MutableState, p2: FloatingCallOverlayService, p3: WindowManager$LayoutParams, p4: ComposeView, p5: FrameLayout, p6: State, p7: State, p8: State) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda22.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$3, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$4, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$5, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$6, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$7, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$8
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda22.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$3, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$4, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$5, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$6, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$7, FloatingCallOverlayService$$ExternalSyntheticLambda22.f$8
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117()
+        TODO("Decoded 17 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda23 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$56$lambda$55()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda24 : Function2 {
+    val f$0: WindowManager$LayoutParams
+    val f$1: ComposeView
+    val f$2: FloatingCallOverlayService
+    val f$3: FrameLayout
+
+    constructor(p0: WindowManager$LayoutParams, p1: ComposeView, p2: FloatingCallOverlayService, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda24.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda24.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda24.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda24.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda24.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda24.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda24.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda24.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$17$lambda$16()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda25 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda25.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda25.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$58$lambda$57()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda26 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$60$lambda$59()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda27 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$62$lambda$61()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda28 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$64$lambda$63()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda29 : Function1 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda29.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda29.f$0
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$19$lambda$18()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda3 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda3.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda3.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$87$lambda$86()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda30 : Function1 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda30.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda30.f$0
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$21$lambda$20()
+        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda31 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda31.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda31.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$23$lambda$22()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda32 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda32.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda32.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$25$lambda$24()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda33 : Function2 {
+    val f$0: WindowManager$LayoutParams
+    val f$1: ComposeView
+    val f$2: FloatingCallOverlayService
+    val f$3: FrameLayout
+
+    constructor(p0: WindowManager$LayoutParams, p1: ComposeView, p2: FloatingCallOverlayService, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda33.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda33.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda33.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda33.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda33.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda33.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda33.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda33.f$3
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66()
+        TODO("Decoded 12 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda34 : Function2 {
+    val f$0: WindowManager$LayoutParams
+    val f$1: ComposeView
+    val f$2: FloatingCallOverlayService
+    val f$3: FrameLayout
+
+    constructor(p0: WindowManager$LayoutParams, p1: ComposeView, p2: FloatingCallOverlayService, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda34.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda34.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda34.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda34.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda34.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda34.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda34.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda34.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$28$lambda$27()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda35 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda35.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda35.f$0
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$30$lambda$29()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda36 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$32$lambda$31()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda37 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureOverlayAttached$lambda$67$lambda$66$lambda$65$lambda$34$lambda$33()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda38 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda38.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda38.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$82$lambda$81()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda39 : Function0 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$105$lambda$104()
+        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda4 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda4.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda4.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$89$lambda$88()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda40 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda40.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda40.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$107$lambda$106()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda41 : Function2 {
+    val f$0: FloatingCallOverlayService
+    val f$1: WindowManager$LayoutParams
+    val f$2: ComposeView
+    val f$3: FrameLayout
+
+    constructor(p0: FloatingCallOverlayService, p1: WindowManager$LayoutParams, p2: ComposeView, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda41.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda41.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda41.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda41.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda41.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda41.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda41.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda41.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$110$lambda$109()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda42 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda42.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda42.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$112$lambda$111()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda43 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda43.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda43.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$114$lambda$113()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda5 : Function2 {
+    val f$0: FloatingCallOverlayService
+    val f$1: WindowManager$LayoutParams
+    val f$2: ComposeView
+    val f$3: FrameLayout
+
+    constructor(p0: FloatingCallOverlayService, p1: WindowManager$LayoutParams, p2: ComposeView, p3: FrameLayout) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda5.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda5.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda5.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda5.f$3
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda5.f$0, FloatingCallOverlayService$$ExternalSyntheticLambda5.f$1, FloatingCallOverlayService$$ExternalSyntheticLambda5.f$2, FloatingCallOverlayService$$ExternalSyntheticLambda5.f$3
+        // -> Float.floatValue()
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$92$lambda$91()
+        TODO("Decoded 13 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda6 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda6.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda6.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$94$lambda$93()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda7 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda7.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda7.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$96$lambda$95()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda8 : Function0 {
+    val f$0: FloatingCallOverlayService
+
+    constructor(p0: FloatingCallOverlayService) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda8.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda8.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$98$lambda$97()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayService$$ExternalSyntheticLambda9 : Function0 {
+    val f$0: MutableState
+
+    constructor(p0: MutableState) {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda9.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayService$$ExternalSyntheticLambda9.f$0
+        // -> FloatingCallOverlayService.ensureWaitingOverlayAttached$lambda$119$lambda$118$lambda$117$lambda$100$lambda$99()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda0 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda0.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda0.f$0
+        // -> FloatingCallOverlayServiceKt.WaitingCallFloatingPopup$lambda$67$lambda$66$lambda$60$lambda$55$lambda$54()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda1 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda1.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda1.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$51$lambda$35$lambda$34$lambda$32$lambda$31()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10 : Function2 {
+    val f$0: String
+    val f$1: String
+    val f$2: Boolean
+    val f$3: Float
+    val f$4: Function0
+    val f$5: Function2
+    val f$6: Function1
+    val f$7: Int
+    val f$8: Int
+
+    constructor(p0: String, p1: String, p2: Boolean, p3: Float, p4: Function0, p5: Function2, p6: Function1, p7: Int, p8: Int) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$7, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$8
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$7, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda10.f$8
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayServiceKt.FloatingMinimizedCallBall$lambda$9()
+        TODO("Decoded 17 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda11 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda11.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda11.f$0
+        // -> FloatingCallOverlayServiceKt.WaitingCallFloatingPopup$lambda$67$lambda$66$lambda$60$lambda$58$lambda$57()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12 : Function2 {
+    val f$0: String
+    val f$1: String
+    val f$10: Boolean
+    val f$11: Int
+    val f$12: Float
+    val f$13: Float
+    val f$14: Function0
+    val f$15: Function0
+    val f$16: Function2
+    val f$17: Function0
+    val f$18: Function0
+    val f$19: Function0
+    val f$2: String
+    val f$20: Int
+    val f$21: Int
+    val f$22: Int
+    val f$3: CallNetworkBadge
+    val f$4: String
+    val f$5: String
+    val f$6: Int
+    val f$7: Int
+    val f$8: Boolean
+    val f$9: Long
+
+    constructor(p0: String, p1: String, p2: String, p3: CallNetworkBadge, p4: String, p5: String, p6: Int, p7: Int, p8: Boolean, p9: Long, p10: Boolean, p11: Int, p12: Float, p13: Float, p14: Function0, p15: Function0, p16: Function2, p17: Function0, p18: Function0, p19: Function0, p20: Int, p21: Int, p22: Int) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$7, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$8, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$9, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$10, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$11
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$7, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$8, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$9, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$10, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda12.f$11
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayServiceKt.WaitingCallFloatingPopup$lambda$68()
+        TODO("Decoded 53 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda13 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda13.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda13.f$0
+        // -> FloatingCallOverlayServiceKt.XosSingleToggleButton_3MZ6nm0$lambda$74$lambda$73()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14 : Function2 {
+    val f$0: Boolean
+    val f$1: Long
+    val f$2: Float
+    val f$3: Function0
+    val f$4: Function3
+    val f$5: Int
+    val f$6: Int
+
+    constructor(p0: Boolean, p1: Long, p2: Float, p3: Function0, p4: Function3, p5: Int, p6: Int) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$6
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda14.f$6
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayServiceKt.XosSingleToggleButton_3MZ6nm0$lambda$76()
+        TODO("Decoded 15 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda15 : Function1 {
+    val f$0: Function1
+
+    constructor(p0: Function1) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda15.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda15.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$14$lambda$13()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda16 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda16.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda16.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$17$lambda$16()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda17 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda17.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda17.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$51$lambda$35$lambda$34$lambda$23$lambda$22()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda18 : Function1 {
+    val f$0: State
+
+    constructor(p0: State) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda18.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda18.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$51$lambda$35$lambda$34$lambda$30$lambda$26$lambda$25()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda19 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda19.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda19.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$51$lambda$35$lambda$34$lambda$30$lambda$28$lambda$27()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda2 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda2.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda2.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$51$lambda$50$lambda$45$lambda$44$lambda$42$lambda$41()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda3 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda3.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda3.f$0
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$51$lambda$50$lambda$49$lambda$47$lambda$46()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4 : Function2 {
+    val f$0: String
+    val f$1: String
+    val f$10: Boolean
+    val f$11: Boolean
+    val f$12: Boolean
+    val f$13: Long
+    val f$14: Boolean
+    val f$15: Boolean
+    val f$16: Boolean
+    val f$17: Boolean
+    val f$18: Int
+    val f$19: Float
+    val f$2: String
+    val f$20: Float
+    val f$21: Function1
+    val f$22: Function0
+    val f$23: Function0
+    val f$24: Function2
+    val f$25: Function0
+    val f$26: Function0
+    val f$27: Function0
+    val f$28: Function0
+    val f$29: Function0
+    val f$3: CallNetworkBadge
+    val f$30: Int
+    val f$31: Int
+    val f$32: Int
+    val f$33: Int
+    val f$4: String
+    val f$5: String
+    val f$6: Int
+    val f$7: Int
+    val f$8: CallLifecycleState
+    val f$9: Boolean
+
+    constructor(p0: String, p1: String, p2: String, p3: CallNetworkBadge, p4: String, p5: String, p6: Int, p7: Int, p8: CallLifecycleState, p9: Boolean, p10: Boolean, p11: Boolean, p12: Boolean, p13: Long, p14: Boolean, p15: Boolean, p16: Boolean, p17: Boolean, p18: Int, p19: Float, p20: Float, p21: Function1, p22: Function0, p23: Function0, p24: Function2, p25: Function0, p26: Function0, p27: Function0, p28: Function0, p29: Function0, p30: Int, p31: Int, p32: Int, p33: Int) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$7, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$8, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$9, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$10, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$11
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$7, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$8, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$9, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$10, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda4.f$11
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayServiceKt.XosFloatingCallWindow$lambda$52()
+        TODO("Decoded 86 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda5 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda5.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda5.f$0
+        // -> FloatingCallOverlayServiceKt.WaitingActionPillButton_uKGX_YA$lambda$70$lambda$69()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6 : Function2 {
+    val f$0: String
+    val f$1: ImageVector
+    val f$2: Long
+    val f$3: Float
+    val f$4: Modifier
+    val f$5: Function0
+    val f$6: Int
+    val f$7: Int
+
+    constructor(p0: String, p1: ImageVector, p2: Long, p3: Float, p4: Modifier, p5: Function0, p6: Int, p7: Int) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$7
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$0, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$1, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$2, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$3, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$4, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$5, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$6, FloatingCallOverlayServiceKt$$ExternalSyntheticLambda6.f$7
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayServiceKt.WaitingActionPillButton_uKGX_YA$lambda$72()
+        TODO("Decoded 16 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda7 : Function1 {
+    constructor() {
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // -> Integer.intValue()
+        // -> FloatingCallOverlayServiceKt.FloatingMinimizedCallBall$lambda$1$lambda$0()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda8 : Function1 {
+    val f$0: Function1
+
+    constructor(p0: Function1) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda8.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda8.f$0
+        // -> FloatingCallOverlayServiceKt.FloatingMinimizedCallBall$lambda$4$lambda$3()
+        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$$ExternalSyntheticLambda9 : Function0 {
+    val f$0: Function0
+
+    constructor(p0: Function0) {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda9.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(): Any {
+        // Fields: FloatingCallOverlayServiceKt$$ExternalSyntheticLambda9.f$0
+        // -> FloatingCallOverlayServiceKt.FloatingMinimizedCallBall$lambda$7$lambda$6()
+        TODO("Decoded 4 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class CallStateManager$callCallback$1$$ExternalSyntheticLambda0 : Runnable {
+    val f$0: Call
+
+    constructor(p0: Call) {
+        // Fields: CallStateManager$callCallback$1$$ExternalSyntheticLambda0.f$0
+        // -> Object.<init>()
+    }
+
+    fun run() {
+        // Fields: CallStateManager$callCallback$1$$ExternalSyntheticLambda0.f$0
+        // -> CallStateManager$callCallback$1.onStateChanged$lambda$1()
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$FloatingMinimizedCallBall$3$1$$ExternalSyntheticLambda0 : Function2 {
+    val f$0: Function2
+
+    constructor(p0: Function2) {
+        // Fields: FloatingCallOverlayServiceKt$FloatingMinimizedCallBall$3$1$$ExternalSyntheticLambda0.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$FloatingMinimizedCallBall$3$1$$ExternalSyntheticLambda0.f$0
+        // -> FloatingCallOverlayServiceKt$FloatingMinimizedCallBall$3$1.invokeSuspend$lambda$0()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$WaitingCallFloatingPopup$1$1$$ExternalSyntheticLambda0 : Function2 {
+    val f$0: Function2
+
+    constructor(p0: Function2) {
+        // Fields: FloatingCallOverlayServiceKt$WaitingCallFloatingPopup$1$1$$ExternalSyntheticLambda0.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$WaitingCallFloatingPopup$1$1$$ExternalSyntheticLambda0.f$0
+        // -> FloatingCallOverlayServiceKt$WaitingCallFloatingPopup$1$1.invokeSuspend$lambda$0()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
+
+class FloatingCallOverlayServiceKt$XosFloatingCallWindow$2$1$$ExternalSyntheticLambda0 : Function2 {
+    val f$0: Function2
+
+    constructor(p0: Function2) {
+        // Fields: FloatingCallOverlayServiceKt$XosFloatingCallWindow$2$1$$ExternalSyntheticLambda0.f$0
+        // -> Object.<init>()
+    }
+
+    fun invoke(p0: Any, p1: Any): Any {
+        // Fields: FloatingCallOverlayServiceKt$XosFloatingCallWindow$2$1$$ExternalSyntheticLambda0.f$0
+        // -> FloatingCallOverlayServiceKt$XosFloatingCallWindow$2$1.invokeSuspend$lambda$0()
+        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    }
+
+}
