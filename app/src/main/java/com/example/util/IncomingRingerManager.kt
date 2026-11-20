@@ -1,344 +1,327 @@
-// Reconstructed from APK DEX metadata & bytecode (IncomingRingerManager.kt)
 package com.example.util
 
 import android.content.Context
-import android.media.MediaPlayer
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.Ringtone
+import android.media.RingtoneManager
 import android.media.ToneGenerator
-import android.os.Handler
+import android.os.Build
+import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
+import android.provider.Settings
+import com.example.data.AppPreferences
 import com.example.model.CallWaitingAlertMode
 import com.example.model.IncomingVibrationPattern
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 object IncomingRingerManager {
-    companion object {
-        val CALL_WAITING_SOUND_INTERVAL_MS: Long = 3000L
-        val CALL_WAITING_VIBRATE_GAP_MS: Long = 220L
-        val CALL_WAITING_VIBRATE_MS: Long = 350L
-        val CALL_WAITING_VIBRATE_REPEAT_MS: Long = 20000L
-        var activeWaitingCallKey: String
-        var fallbackRingtone: Ringtone
-        var isRinging: Boolean
-        var isWaitingAlertActive: Boolean
-        val mainHandler: Handler
-        var mediaPlayer: MediaPlayer
-        var waitingSoundRunnable: Runnable
-        var waitingToneGen: ToneGenerator
-        var waitingVibrateRunnable: Runnable
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var activeRingtone: Ringtone? = null
+    private var activeVibrator: Vibrator? = null
+    private var isRingingNow: Boolean = false
+    private var waitingToneJob: Job? = null
+    private var waitingToneGenerator: ToneGenerator? = null
+    private var torchBlinkJob: Job? = null
+    private var torchAppContext: Context? = null
+
+    fun startPrimaryRinging(context: Context) {
+        if (isRingingNow) return
+        isRingingNow = true
+        val appContext = context.applicationContext
+        val settings = AppPreferences(appContext).settings.value
+        val audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        val ringerMode = audioManager?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL
+
+        val shouldVibrate = shouldVibrateForSystemOrPattern(
+            context = appContext,
+            pattern = settings.incomingVibrationPattern,
+            ringerMode = ringerMode
+        )
+
+        var ringtoneProvidesHaptics = false
+        if (ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            runCatching {
+                val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+                val ringtone = RingtoneManager.getRingtone(appContext, uri)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                    settings.incomingVibrationPattern == IncomingVibrationPattern.SYSTEM_DEFAULT &&
+                    shouldVibrate &&
+                    AudioManager.isHapticPlaybackSupported() &&
+                    RingtoneManager.hasHapticChannels(uri)
+                ) {
+                    ringtoneProvidesHaptics = true
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val attrsBuilder = AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        attrsBuilder.setHapticChannelsMuted(!ringtoneProvidesHaptics)
+                    }
+                    ringtone?.audioAttributes = attrsBuilder.build()
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    ringtone?.isLooping = true
+                }
+                ringtone?.play()
+                activeRingtone = ringtone
+            }
+        }
+
+        if (shouldVibrate && !ringtoneProvidesHaptics) {
+            vibrateWithPattern(
+                context = appContext,
+                timings = settings.incomingVibrationPattern.timings,
+                repeatIndex = 0
+            )
+        }
+
+        if (settings.flashTorchOnIncomingCall) {
+            startTorchBlinking(appContext)
+        }
     }
 
-    private constructor() {
-        // -> Object.<init>()
+    private fun shouldVibrateForSystemOrPattern(
+        context: Context,
+        pattern: IncomingVibrationPattern,
+        ringerMode: Int
+    ): Boolean {
+        if (pattern == IncomingVibrationPattern.SILENT) return false
+        if (pattern != IncomingVibrationPattern.SYSTEM_DEFAULT) {
+            return ringerMode != AudioManager.RINGER_MODE_SILENT
+        }
+
+        val cr = context.contentResolver
+        val ringIntensity = runCatching {
+            Settings.System.getInt(cr, "ring_vibration_intensity", -1)
+        }.getOrDefault(-1)
+        if (ringIntensity == 0) return false
+
+        return when (ringerMode) {
+            AudioManager.RINGER_MODE_VIBRATE -> true
+            AudioManager.RINGER_MODE_SILENT -> {
+                runCatching {
+                    Settings.System.getInt(cr, "vibrate_in_silent", 0) == 1
+                }.getOrDefault(false)
+            }
+            else -> {
+                val miuiNormal = runCatching {
+                    Settings.System.getInt(cr, "vibrate_in_normal", -1)
+                }.getOrDefault(-1)
+                if (miuiNormal != -1) {
+                    miuiNormal == 1
+                } else {
+                    runCatching {
+                        @Suppress("DEPRECATION")
+                        Settings.System.getInt(cr, Settings.System.VIBRATE_WHEN_RINGING, 0) == 1
+                    }.getOrDefault(false)
+                }
+            }
+        }
     }
 
-    fun access$getActiveWaitingCallKey$p(): String {
-        // Fields: IncomingRingerManager.activeWaitingCallKey
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
+    fun stopPrimaryRinging() {
+        isRingingNow = false
+        stopTorchBlinking()
+        val ringtone = activeRingtone
+        activeRingtone = null
+        runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ringtone?.isLooping = false
+                ringtone?.volume = 0f
+            }
+            ringtone?.stop()
+        }
+        val vibrator = activeVibrator
+        activeVibrator = null
+        runCatching {
+            vibrator?.cancel()
+        }
+        torchAppContext?.let { ctx ->
+            runCatching { getVibrator(ctx)?.cancel() }
+        }
     }
 
-    fun access$getMainHandler$p(): Handler {
-        // Fields: IncomingRingerManager.mainHandler
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
+    private fun startTorchBlinking(context: Context) {
+        stopTorchBlinking()
+        val appCtx = context.applicationContext
+        torchAppContext = appCtx
+        torchBlinkJob = scope.launch(Dispatchers.IO) {
+            val cm = appCtx.getSystemService(Context.CAMERA_SERVICE) as? CameraManager ?: return@launch
+            val cameraId = findFlashCameraId(cm) ?: return@launch
+            var isOn = false
+            try {
+                while (isActive && isRingingNow) {
+                    isOn = !isOn
+                    runCatching { cm.setTorchMode(cameraId, isOn) }
+                    delay(if (isOn) 220L else 260L)
+                }
+            } finally {
+                runCatching { cm.setTorchMode(cameraId, false) }
+            }
+        }
     }
 
-    fun access$isWaitingAlertActive$p(): Boolean {
-        // Fields: IncomingRingerManager.isWaitingAlertActive
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
+    private fun stopTorchBlinking() {
+        torchBlinkJob?.cancel()
+        torchBlinkJob = null
+        val appCtx = torchAppContext ?: return
+        runCatching {
+            val cm = appCtx.getSystemService(Context.CAMERA_SERVICE) as? CameraManager ?: return
+            val cameraId = findFlashCameraId(cm) ?: return
+            cm.setTorchMode(cameraId, false)
+        }
     }
 
-    fun access$playCallWaitingTutTut($this: IncomingRingerManager) {
-        // -> IncomingRingerManager.playCallWaitingTutTut()
+    private fun findFlashCameraId(cm: CameraManager): String? {
+        return runCatching {
+            val ids = cm.cameraIdList
+            ids.firstOrNull { id ->
+                val chars = cm.getCameraCharacteristics(id)
+                val hasFlash = chars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                val facingBack = chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+                hasFlash && facingBack
+            } ?: ids.firstOrNull { id ->
+                cm.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+            }
+        }.getOrNull()
     }
 
-    fun access$vibrateTwice350ms($this: IncomingRingerManager, context: Context) {
-        // -> IncomingRingerManager.vibrateTwice350ms()
+    fun startWaitingCallAlert(context: Context, mode: CallWaitingAlertMode) {
+        stopWaitingCallAlert()
+        val appContext = context.applicationContext
+        waitingToneJob = scope.launch {
+            var elapsedMs = 0L
+            var pulseCount = 0
+            while (isActive) {
+                when (mode) {
+                    CallWaitingAlertMode.SYSTEM_DEFAULT -> {
+                        playWaitingTut(durationMs = 350)
+                        delay(3600L)
+                    }
+                    CallWaitingAlertMode.TUT_TWICE_VIBRATE_TWICE -> {
+                        playWaitingTut(durationMs = 350)
+                        vibrateWithPattern(appContext, longArrayOf(0L, 350L), repeatIndex = -1)
+                        delay(550L)
+                        playWaitingTut(durationMs = 350)
+                        vibrateWithPattern(appContext, longArrayOf(0L, 350L), repeatIndex = -1)
+                        break
+                    }
+                    CallWaitingAlertMode.CONTINUOUS_TUT_VIBRATE_ONCE -> {
+                        playWaitingTut(durationMs = 350)
+                        if (pulseCount == 0) {
+                            vibrateWithPattern(appContext, longArrayOf(0L, 260L, 140L, 260L), repeatIndex = -1)
+                        }
+                        pulseCount++
+                        delay(3400L)
+                    }
+                    CallWaitingAlertMode.CONTINUOUS_TUT_VIBRATE_20S -> {
+                        playWaitingTut(durationMs = 350)
+                        if (elapsedMs % 20_000L == 0L) {
+                            vibrateWithPattern(appContext, longArrayOf(0L, 350L), repeatIndex = -1)
+                        }
+                        delay(4000L)
+                        elapsedMs += 4000L
+                    }
+                }
+            }
+        }
     }
 
-    private fun getVibrator(context: Context): Vibrator {
-        // Strings: "vibrator_manager", "vibrator"
-        // Fields: Build$VERSION.SDK_INT
-        // -> Context.getSystemService()
-        // -> VibratorManager.getDefaultVibrator()
-        TODO("Decoded 25 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun playCallWaitingTutTut() {
-        // Fields: Result.Companion, IncomingRingerManager.waitingToneGen, IncomingRingerManager.INSTANCE, IncomingRingerManager.mainHandler
-        // -> ToneGenerator.<init>()
-        // -> ToneGenerator.startTone()
-        // -> Boolean.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.exceptionOrNull-impl()
-        // -> IncomingRingerManager$$ExternalSyntheticLambda0.<init>()
-        // -> Handler.postDelayed()
-    }
-
-    fun playCallWaitingTutTut$lambda$14$lambda$13$lambda$12($this_runCatching: IncomingRingerManager, $fallback: ToneGenerator) {
-        // Fields: Result.Companion, Unit.INSTANCE
-        // -> ToneGenerator.release()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-    }
-
-    fun previewCallWaitingAlert$lambda$21$lambda$20($this_runCatching: IncomingRingerManager, $gen: ToneGenerator) {
-        // Fields: Result.Companion, Unit.INSTANCE
-        // -> ToneGenerator.release()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-    }
-
-    private fun scheduleContinuousTutTut(expectedKey: String) {
-        // Fields: IncomingRingerManager.waitingSoundRunnable, IncomingRingerManager.mainHandler
-        // -> IncomingRingerManager$scheduleContinuousTutTut$soundLoop$1.<init>()
-        // -> Handler.post()
-    }
-
-    private fun shouldVibrateOnNormalIncoming(context: Context, ringerMode: Int, pattern: IncomingVibrationPattern): Boolean {
-        // Fields: IncomingVibrationPattern.OFF
-        // -> IncomingRingerManager.isSystemCallVibrationEnabled()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun startCallWaitingAlert$lambda$4($waitingCallKey: String) {
-        // Fields: IncomingRingerManager.isWaitingAlertActive, IncomingRingerManager.activeWaitingCallKey, IncomingRingerManager.INSTANCE
-        // -> Intrinsics.areEqual()
-        // -> IncomingRingerManager.playCallWaitingTutTut()
-    }
-
-    private fun startLoopingRingtone(context: Context, simSlotIndex: Int) {
-        // Strings: "ringtone", "ringtone_2", "ringtone_sim2", "sim2_ringtone"
-        // Fields: Result.Companion, IncomingRingerManager.mediaPlayer, Build$VERSION.SDK_INT, IncomingRingerManager.fallbackRingtone, Unit.INSTANCE
-        // -> Integer.intValue()
-        // -> Context.getContentResolver()
-        // -> Settings$System.getString()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> Uri.parse()
-        // -> RingtoneManager.getActualDefaultRingtoneUri()
-        // -> RingtoneManager.getDefaultUri()
-        // -> MediaPlayer.<init>()
-        // -> AudioAttributes$Builder.<init>()
-        // -> AudioAttributes$Builder.setUsage()
-        // -> AudioAttributes$Builder.setContentType()
-        // -> AudioAttributes$Builder.build()
-        // -> MediaPlayer.setAudioAttributes()
-        // -> MediaPlayer.setDataSource()
-        // -> MediaPlayer.setLooping()
-        // -> MediaPlayer.prepare()
-        // -> MediaPlayer.start()
-        // -> Boolean.valueOf()
-    }
-
-    private fun startLoopingVibration(context: Context, patternPref: IncomingVibrationPattern) {
-        // -> IncomingRingerManager.getVibrator()
-        // -> IncomingRingerManager.waveformForPattern()
-        // -> IncomingRingerManager.vibrateWithRingAttributes()
-    }
-
-    fun startRinging$default(p0: IncomingRingerManager, p1: Context, p2: Int, p3: Int, p4: Any) {
-        // -> IncomingRingerManager.startRinging()
-    }
-
-    fun stopCallWaitingAlert$default(p0: IncomingRingerManager, p1: Context, p2: Int, p3: Any) {
-        // -> IncomingRingerManager.stopCallWaitingAlert()
-    }
-
-    private fun vibrateTwice350ms(context: Context) {
-        // Fields: Result.Companion, Build$VERSION.SDK_INT, Unit.INSTANCE
-        // -> IncomingRingerManager.getVibrator()
-        // -> Vibrator.hasVibrator()
-        // -> VibrationEffect.createWaveform()
-        // -> Vibrator.vibrate()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-    }
-
-    private fun vibrateWithRingAttributes(vibrator: Vibrator, pattern: LongArray, repeatIndex: Int) {
-        // Strings: "build(...)"
-        // Fields: Result.Companion, Build$VERSION.SDK_INT, Unit.INSTANCE
-        // -> Vibrator.hasVibrator()
-        // -> VibrationEffect.createWaveform()
-        // -> VibrationAttributes$Builder.<init>()
-        // -> VibrationAttributes$Builder.setUsage()
-        // -> VibrationAttributes$Builder.build()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> Vibrator.vibrate()
-        // -> AudioAttributes$Builder.<init>()
-        // -> AudioAttributes$Builder.setUsage()
-        // -> AudioAttributes$Builder.setContentType()
-        // -> AudioAttributes$Builder.build()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-    }
-
-    fun isSystemCallVibrationEnabled(context: Context, ringerMode: Int): Boolean {
-        // Strings: "context", "ring_vibration_intensity", "vibrate_when_ringing"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getContentResolver()
-        // -> Settings$System.getInt()
-        // -> Integer.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> Number.intValue()
-        // -> Boolean.valueOf()
-        // -> Boolean.booleanValue()
-        TODO("Decoded 78 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun previewCallWaitingAlert(context: Context, mode: CallWaitingAlertMode) {
-        // Strings: "context", "mode"
-        // Fields: Result.Companion, IncomingRingerManager.mainHandler
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getApplicationContext()
-        // -> Intrinsics.checkNotNull()
-        // -> IncomingRingerManager.vibrateTwice350ms()
-        // -> ToneGenerator.<init>()
-        // -> ToneGenerator.startTone()
-        // -> IncomingRingerManager$$ExternalSyntheticLambda2.<init>()
-        // -> Handler.postDelayed()
-        // -> Boolean.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
+    fun stopWaitingCallAlert() {
+        waitingToneJob?.cancel()
+        waitingToneJob = null
+        runCatching {
+            waitingToneGenerator?.stopTone()
+            waitingToneGenerator?.release()
+        }
+        waitingToneGenerator = null
     }
 
     fun previewVibrationPattern(context: Context, pattern: IncomingVibrationPattern) {
-        // Strings: "context", "pattern", "getApplicationContext(...)", "copyOf(...)"
-        // Fields: Result.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getApplicationContext()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> IncomingRingerManager.getVibrator()
-        // -> Vibrator.cancel()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> IncomingRingerManager.waveformForPattern()
-        // -> Arrays.copyOf()
-        // -> IncomingRingerManager.vibrateWithRingAttributes()
+        if (pattern == IncomingVibrationPattern.SILENT) return
+        val appContext = context.applicationContext
+        if (pattern == IncomingVibrationPattern.SYSTEM_DEFAULT) {
+            val audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            val ringerMode = audioManager?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL
+            val sysOn = shouldVibrateForSystemOrPattern(appContext, pattern, ringerMode)
+            if (!sysOn) return
+        }
+        vibrateWithPattern(appContext, pattern.timings, repeatIndex = -1)
     }
 
-    fun startCallWaitingAlert(context: Context, waitingCallKey: String, mode: CallWaitingAlertMode) {
-        // Strings: "context", "waitingCallKey", "mode", "audio"
-        // Fields: IncomingRingerManager.isWaitingAlertActive, IncomingRingerManager.activeWaitingCallKey, IncomingRingerManager$WhenMappings.$EnumSwitchMapping$0, IncomingRingerManager.waitingVibrateRunnable, IncomingRingerManager.mainHandler, IncomingRingerManager.waitingSoundRunnable
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getApplicationContext()
-        // -> Intrinsics.checkNotNull()
-        // -> IncomingRingerManager.stopRinging()
-        // -> Intrinsics.areEqual()
-        // -> IncomingRingerManager.stopCallWaitingAlert()
-        // -> Context.getSystemService()
-        // -> AudioManager.getRingerMode()
-        // -> IncomingRingerManager.isSystemCallVibrationEnabled()
-        // -> CallWaitingAlertMode.ordinal()
-        // -> IncomingRingerManager.scheduleContinuousTutTut()
-        // -> IncomingRingerManager$startCallWaitingAlert$vibrateLoop$1.<init>()
-        // -> Handler.post()
-        // -> IncomingRingerManager.vibrateTwice350ms()
-        // -> IncomingRingerManager.playCallWaitingTutTut()
-        // -> IncomingRingerManager$$ExternalSyntheticLambda1.<init>()
-        // -> Handler.postDelayed()
-        // -> NoWhenBranchMatchedException.<init>()
+    fun previewCallWaitingAlert(context: Context, mode: CallWaitingAlertMode) {
+        val appContext = context.applicationContext
+        scope.launch {
+            when (mode) {
+                CallWaitingAlertMode.SYSTEM_DEFAULT -> playWaitingTut(350)
+                CallWaitingAlertMode.TUT_TWICE_VIBRATE_TWICE -> {
+                    playWaitingTut(350)
+                    vibrateWithPattern(appContext, longArrayOf(0L, 350L), repeatIndex = -1)
+                    delay(500L)
+                    playWaitingTut(350)
+                    vibrateWithPattern(appContext, longArrayOf(0L, 350L), repeatIndex = -1)
+                }
+                CallWaitingAlertMode.CONTINUOUS_TUT_VIBRATE_ONCE,
+                CallWaitingAlertMode.CONTINUOUS_TUT_VIBRATE_20S -> {
+                    playWaitingTut(350)
+                    vibrateWithPattern(appContext, longArrayOf(0L, 350L), repeatIndex = -1)
+                }
+            }
+        }
     }
 
-    fun startRinging(context: Context, simSlotIndex: Int) {
-        // Strings: "context", "audio"
-        // Fields: IncomingRingerManager.isRinging, AppPreferences.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> IncomingRingerManager.stopCallWaitingAlert()
-        // -> Context.getApplicationContext()
-        // -> Context.getSystemService()
-        // -> AudioManager.getRingerMode()
-        // -> Intrinsics.checkNotNull()
-        // -> AppPreferences.init()
-        // -> AppPreferences.getSettings()
-        // -> StateFlow.getValue()
-        // -> DialerSettings.getIncomingVibrationPattern()
-        // -> IncomingRingerManager.startLoopingRingtone()
-        // -> IncomingRingerManager.shouldVibrateOnNormalIncoming()
-        // -> IncomingRingerManager.startLoopingVibration()
+    private fun playWaitingTut(durationMs: Int) {
+        runCatching {
+            if (waitingToneGenerator == null) {
+                waitingToneGenerator = ToneGenerator(AudioManager.STREAM_VOICE_CALL, 75)
+            }
+            waitingToneGenerator?.startTone(ToneGenerator.TONE_SUP_CALL_WAITING, durationMs)
+        }
     }
 
-    fun stopCallWaitingAlert(context: Context) {
-        // Strings: "getApplicationContext(...)"
-        // Fields: IncomingRingerManager.isWaitingAlertActive, IncomingRingerManager.waitingSoundRunnable, IncomingRingerManager.waitingVibrateRunnable, IncomingRingerManager.activeWaitingCallKey, IncomingRingerManager.mainHandler, Result.Companion, IncomingRingerManager.waitingToneGen, Unit.INSTANCE, IncomingRingerManager.isRinging
-        // -> Handler.removeCallbacks()
-        // -> ToneGenerator.stopTone()
-        // -> ToneGenerator.release()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Context.getApplicationContext()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> IncomingRingerManager.getVibrator()
-        // -> Vibrator.cancel()
+    @Suppress("DEPRECATION")
+    private fun vibrateWithPattern(context: Context, timings: LongArray, repeatIndex: Int) {
+        runCatching {
+            val vibrator = getVibrator(context) ?: return
+            if (!vibrator.hasVibrator()) return
+            activeVibrator = vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val effect = VibrationEffect.createWaveform(timings, repeatIndex)
+                val vAttrs = android.os.VibrationAttributes.Builder()
+                    .setUsage(android.os.VibrationAttributes.USAGE_RINGTONE)
+                    .build()
+                vibrator.vibrate(effect, vAttrs)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = VibrationEffect.createWaveform(timings, repeatIndex)
+                val attrs = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                vibrator.vibrate(effect, attrs)
+            } else {
+                vibrator.vibrate(timings, repeatIndex)
+            }
+        }
     }
 
-    fun stopRinging(context: Context) {
-        // Strings: "context", "getApplicationContext(...)"
-        // Fields: IncomingRingerManager.isRinging, Result.Companion, IncomingRingerManager.mediaPlayer, Unit.INSTANCE, IncomingRingerManager.fallbackRingtone
-        // -> Intrinsics.checkNotNullParameter()
-        // -> MediaPlayer.isPlaying()
-        // -> MediaPlayer.stop()
-        // -> MediaPlayer.reset()
-        // -> MediaPlayer.release()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Ringtone.stop()
-        // -> Context.getApplicationContext()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> IncomingRingerManager.getVibrator()
-        // -> Vibrator.cancel()
+    @Suppress("DEPRECATION")
+    private fun getVibrator(context: Context): Vibrator? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vm = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+            vm?.defaultVibrator
+        } else {
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
     }
-
-    fun waveformForPattern(pattern: IncomingVibrationPattern): LongArray {
-        // Strings: "pattern"
-        // Fields: IncomingRingerManager$WhenMappings.$EnumSwitchMapping$1
-        // -> Intrinsics.checkNotNullParameter()
-        // -> IncomingVibrationPattern.ordinal()
-        // -> NoWhenBranchMatchedException.<init>()
-        TODO("Decoded 68 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class IncomingRingerManager$WhenMappings {
-}
-
-class IncomingRingerManager$scheduleContinuousTutTut$soundLoop$1 : Runnable {
-    constructor($expectedKey: String) {
-        // Fields: IncomingRingerManager$scheduleContinuousTutTut$soundLoop$1.$expectedKey
-        // -> Object.<init>()
-    }
-
-    fun run() {
-        // Fields: IncomingRingerManager$scheduleContinuousTutTut$soundLoop$1.$expectedKey, IncomingRingerManager.INSTANCE
-        // -> IncomingRingerManager.access$isWaitingAlertActive$p()
-        // -> IncomingRingerManager.access$getActiveWaitingCallKey$p()
-        // -> Intrinsics.areEqual()
-        // -> IncomingRingerManager.access$playCallWaitingTutTut()
-        // -> IncomingRingerManager.access$getMainHandler$p()
-        // -> Handler.postDelayed()
-    }
-
-}
-
-class IncomingRingerManager$startCallWaitingAlert$vibrateLoop$1 : Runnable {
-    constructor($waitingCallKey: String, $appCtx: Context) {
-        // Fields: IncomingRingerManager$startCallWaitingAlert$vibrateLoop$1.$waitingCallKey, IncomingRingerManager$startCallWaitingAlert$vibrateLoop$1.$appCtx
-        // -> Object.<init>()
-    }
-
-    fun run() {
-        // Fields: IncomingRingerManager$startCallWaitingAlert$vibrateLoop$1.$waitingCallKey, IncomingRingerManager.INSTANCE, IncomingRingerManager$startCallWaitingAlert$vibrateLoop$1.$appCtx
-        // -> IncomingRingerManager.access$isWaitingAlertActive$p()
-        // -> IncomingRingerManager.access$getActiveWaitingCallKey$p()
-        // -> Intrinsics.areEqual()
-        // -> Intrinsics.checkNotNull()
-        // -> IncomingRingerManager.access$vibrateTwice350ms()
-        // -> IncomingRingerManager.access$getMainHandler$p()
-        // -> Handler.postDelayed()
-    }
-
 }

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:gravity="0x11"
-        android:height="0.00dp"
-        android:width="0.00dp"
-        android:drawable="@drawable/dialer_gemini_icon_1794563243221">
-    </item>
+        android:gravity="center"
+        android:height="72dp"
+        android:width="72dp"
+        android:drawable="@drawable/dialer_gemini_icon_1794563243221" />
 </layer-list>

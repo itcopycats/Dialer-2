@@ -1,929 +1,399 @@
-// Reconstructed from APK DEX metadata & bytecode (AppPreferences.kt)
 package com.example.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.model.CallExtraMetadata
 import com.example.model.CallMergeMode
 import com.example.model.CallWaitingAlertMode
 import com.example.model.CallWindowPreference
 import com.example.model.IncomingVibrationPattern
+import com.example.model.MissedCallReminderInterval
 import com.example.model.ProximityMode
 import com.example.model.RecordingEngine
 import com.example.model.RecordingMode
 import com.example.model.RecordingSaveLocation
-import com.example.ui.theme.ThemeMode
-import java.util.List
+import com.example.model.ThemeMode
+import com.example.model.VoiceEffectPreset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONObject
 
-object AppPreferences {
+data class DialerSettings(
+    val themeMode: ThemeMode = ThemeMode.AUTO,
+    val isResolvedDarkTheme: Boolean = true,
+    val materialYouEnabled: Boolean = true,
+    val useAmoledPureBlack: Boolean = true,
+    val glassBlurStrength: Float = 0.50f,
+    val glassTintAlpha: Float = 0.68f,
+    val callMergeMode: CallMergeMode = CallMergeMode.BY_CONTACT,
+    val ignoreDefaultSim: Boolean = true,
+    val askSimOnRecentsCall: Boolean = true,
+    val enableDialpadTones: Boolean = true,
+    val incomingVibrationPattern: IncomingVibrationPattern = IncomingVibrationPattern.SYSTEM_DEFAULT,
+    val callWaitingAlertMode: CallWaitingAlertMode = CallWaitingAlertMode.SYSTEM_DEFAULT,
+    val callWindowPreference: CallWindowPreference = CallWindowPreference.FLOATING_WINDOW,
+    val useSystemInCallUi: Boolean = false,
+    val floatingWindowOpacity: Float = 0.85f,
+    val firstPopupWidthDp: Int = 352,
+    val firstPopupHeightScale: Float = 0.90f,
+    val secondPopupWidthDp: Int = 340,
+    val secondPopupHeightScale: Float = 0.94f,
+    val floatingOverlayX: Int = 0,
+    val floatingOverlayY: Int = 64,
+    val proximitySensorEnabled: Boolean = true,
+    val proximityMode: ProximityMode = ProximityMode.SCREEN_OFF,
+    val rootEnhancementsEnabled: Boolean = true,
+    val recordingMode: RecordingMode = RecordingMode.MANUAL,
+    val recordingEngine: RecordingEngine = RecordingEngine.ROOT_VOICE_CALL,
+    val recordingSaveLocation: RecordingSaveLocation = RecordingSaveLocation.CUSTOM_FOLDER,
+    val recordingCustomTreeUri: String = "",
+    val showCallRecordingInDetails: Boolean = true,
+    val enableDuplicateMergeSuggestions: Boolean = true,
+    val blockUnknownPrivateNumbers: Boolean = false,
+    val blockForeignInternationalNumbers: Boolean = false,
+    val blockUnsavedNumbers: Boolean = false,
+    val showBlockedCallNotifications: Boolean = true,
+    val voiceEffectPreset: VoiceEffectPreset = VoiceEffectPreset.DISABLED,
+    val missedCallReminderInterval: MissedCallReminderInterval = MissedCallReminderInterval.OFF,
+    val flashTorchOnIncomingCall: Boolean = false
+)
+
+class AppPreferences(context: Context) {
+    private val prefs: SharedPreferences =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    private val _settings: MutableStateFlow<DialerSettings> = getOrInitSharedFlow(prefs)
+    val settings: StateFlow<DialerSettings> = _settings.asStateFlow()
+
     companion object {
-        val KEY_AMOLED_BLACK: String = "amoled_black"
-        val KEY_ASK_SIM_RECENTS: String = "ask_sim_on_recents_call"
-        val KEY_BLOCKED_NOTIF_COUNTS: String = "blocked_notif_counts_json"
-        val KEY_BLOCKED_PREFIXES: String = "blocked_number_prefixes_json"
-        val KEY_BLOCKED_RESET_CUTOFF_MS: String = "blocked_notif_reset_cutoff_ms"
-        val KEY_BLOCK_FOREIGN: String = "block_foreign_numbers"
-        val KEY_BLOCK_UNKNOWN: String = "block_unknown_numbers"
-        val KEY_BLOCK_UNSAVED: String = "block_unsaved_numbers"
-        val KEY_CACHED_RECENT_LOGS: String = "cached_recent_call_logs_json"
-        val KEY_CALL_META_HISTORY: String = "call_extra_meta_json"
-        val KEY_CALL_WAITING_MODE: String = "call_waiting_alert_mode"
-        val KEY_CONTACTS_FILTER: String = "contacts_account_filter_key"
-        val KEY_DEFAULT_DIALER_DISMISSED: String = "default_dialer_banner_dismissed"
-        val KEY_DIALPAD_TONES: String = "dialpad_tones_enabled"
-        val KEY_DISABLE_CUSTOM_INCALL: String = "disable_custom_incall_ui"
-        val KEY_DYNAMIC_COLOR: String = "use_dynamic_color"
-        val KEY_ENABLE_MERGE_SUGGESTIONS: String = "enable_duplicate_merge_suggestions"
-        val KEY_FLOATING_ALPHA: String = "floating_window_alpha"
-        val KEY_FLOATING_HEIGHT_SCALE: String = "floating_window_height_scale"
-        val KEY_FLOATING_WIDTH_DP: String = "floating_window_width_dp"
-        val KEY_IGNORE_DEFAULT_SIM: String = "ignore_default_sim"
-        val KEY_INCOMING_VIBRATION_PATTERN: String = "incoming_vibration_pattern"
-        val KEY_INCOMING_WINDOW: String = "incoming_window_mode"
-        val KEY_LAST_BLOCKED_AT_MS: String = "last_blocked_call_at_ms"
-        val KEY_LAST_OBSERVED_BLOCKED_LOG_MS: String = "last_observed_blocked_log_ms"
-        val KEY_LOCAL_BLOCKLIST: String = "local_blocklist_json"
-        val KEY_MERGE_MODE: String = "call_merge_mode"
-        val KEY_OS_BLOCKLIST_BASELINE: String = "os_blocklist_baseline_synced"
-        val KEY_PROXIMITY_ENABLED: String = "proximity_sensor_enabled"
-        val KEY_PROXIMITY_MODE: String = "proximity_sensor_mode"
-        val KEY_RECENTS_FILTER: String = "recents_filter_saved"
-        val KEY_RECORDING_ENGINE: String = "recording_engine"
-        val KEY_RECORDING_MODE: String = "recording_mode"
-        val KEY_REC_CUSTOM_TREE_URI: String = "recording_custom_tree_uri"
-        val KEY_REC_SAVE_LOCATION: String = "recording_save_location"
-        val KEY_ROOT_ENABLED: String = "root_enhancements"
-        val KEY_SHIZUKU_ENABLED: String = "shizuku_enhancements"
-        val KEY_SHOW_BLOCKED_WARNING: String = "show_blocked_warning_call_ui"
-        val KEY_SHOW_REC_IN_DETAILS: String = "show_rec_in_details"
-        val KEY_THEME_MODE: String = "theme_mode"
-        val KEY_VIBRATE_ANSWER: String = "vibrate_answer"
-        val KEY_WAITING_HEIGHT_SCALE: String = "waiting_window_height_scale"
-        val KEY_WAITING_WIDTH_DP: String = "waiting_window_width_dp"
-        val PREFS_NAME: String = "hyper_xos_dialer_prefs"
-        val _settings: MutableStateFlow
-        var initialized: Boolean
-        val settings: StateFlow
+        private const val PREFS_NAME = "dialer_app_prefs"
+        private val lock = Any()
+
+        @Volatile
+        private var sharedFlow: MutableStateFlow<DialerSettings>? = null
+
+        @Suppress("unused")
+        private var strongPrefListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
+
+        private fun getOrInitSharedFlow(prefs: SharedPreferences): MutableStateFlow<DialerSettings> {
+            sharedFlow?.let { return it }
+            synchronized(lock) {
+                sharedFlow?.let { return it }
+                val flow = MutableStateFlow(readFromPrefs(prefs))
+                val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, _ ->
+                    flow.value = readFromPrefs(sp)
+                }
+                prefs.registerOnSharedPreferenceChangeListener(listener)
+                strongPrefListener = listener
+                sharedFlow = flow
+                return flow
+            }
+        }
+
+        private fun readFromPrefs(prefs: SharedPreferences): DialerSettings {
+            val themeName = prefs.getString("theme_mode", ThemeMode.AUTO.name) ?: ThemeMode.AUTO.name
+            val mergeName = prefs.getString("call_merge_mode", CallMergeMode.BY_CONTACT.name)
+                ?: CallMergeMode.BY_CONTACT.name
+            val vibName = prefs.getString("incoming_vibration_pattern", IncomingVibrationPattern.SYSTEM_DEFAULT.name)
+                ?: IncomingVibrationPattern.SYSTEM_DEFAULT.name
+            val waitName = prefs.getString("call_waiting_alert_mode", CallWaitingAlertMode.SYSTEM_DEFAULT.name)
+                ?: CallWaitingAlertMode.SYSTEM_DEFAULT.name
+            val winName = prefs.getString("call_window_pref", CallWindowPreference.FLOATING_WINDOW.name)
+                ?: CallWindowPreference.FLOATING_WINDOW.name
+            val proxName = prefs.getString("proximity_mode", ProximityMode.SCREEN_OFF.name)
+                ?: ProximityMode.SCREEN_OFF.name
+            val recModeName = prefs.getString("recording_mode", RecordingMode.MANUAL.name)
+                ?: RecordingMode.MANUAL.name
+            val recEngineName = prefs.getString("recording_engine", RecordingEngine.ROOT_VOICE_CALL.name)
+                ?: RecordingEngine.ROOT_VOICE_CALL.name
+            val recLocName = prefs.getString("recording_save_location", RecordingSaveLocation.CUSTOM_FOLDER.name)
+                ?: RecordingSaveLocation.CUSTOM_FOLDER.name
+            val voicePresetName = prefs.getString("voice_effect_preset", VoiceEffectPreset.DISABLED.name)
+                ?: VoiceEffectPreset.DISABLED.name
+            val missedRemName = prefs.getString("missed_call_reminder_interval", MissedCallReminderInterval.OFF.name)
+                ?: MissedCallReminderInterval.OFF.name
+
+            return DialerSettings(
+                themeMode = runCatching { ThemeMode.valueOf(themeName) }.getOrDefault(ThemeMode.AUTO),
+                isResolvedDarkTheme = prefs.getBoolean("resolved_dark_theme", true),
+                materialYouEnabled = prefs.getBoolean("material_you_enabled", true),
+                useAmoledPureBlack = prefs.getBoolean("use_amoled_pure_black", true),
+                glassBlurStrength = prefs.getFloat("glass_blur_strength", 0.50f).coerceIn(0.2f, 1.0f),
+                glassTintAlpha = prefs.getFloat("glass_tint_alpha", 0.68f).coerceIn(0.25f, 0.98f),
+                callMergeMode = runCatching { CallMergeMode.valueOf(mergeName) }.getOrDefault(CallMergeMode.BY_CONTACT),
+                ignoreDefaultSim = prefs.getBoolean("ignore_default_sim", true),
+                askSimOnRecentsCall = prefs.getBoolean("ask_sim_recents", true),
+                enableDialpadTones = prefs.getBoolean("enable_dialpad_tones", true),
+                incomingVibrationPattern = runCatching { IncomingVibrationPattern.valueOf(vibName) }
+                    .getOrDefault(IncomingVibrationPattern.SYSTEM_DEFAULT),
+                callWaitingAlertMode = runCatching { CallWaitingAlertMode.valueOf(waitName) }
+                    .getOrDefault(CallWaitingAlertMode.SYSTEM_DEFAULT),
+                callWindowPreference = runCatching { CallWindowPreference.valueOf(winName) }
+                    .getOrDefault(CallWindowPreference.FLOATING_WINDOW),
+                useSystemInCallUi = prefs.getBoolean("use_system_incall_ui", false),
+                floatingWindowOpacity = prefs.getFloat("floating_window_opacity", 0.85f).coerceIn(0.45f, 1.0f),
+                firstPopupWidthDp = prefs.getInt("first_popup_width_dp", 352).coerceIn(260, 380),
+                firstPopupHeightScale = prefs.getFloat("first_popup_height_scale", 0.90f).coerceIn(0.75f, 1.35f),
+                secondPopupWidthDp = prefs.getInt("second_popup_width_dp", 340).coerceIn(260, 380),
+                secondPopupHeightScale = prefs.getFloat("second_popup_height_scale", 0.94f).coerceIn(0.75f, 1.35f),
+                floatingOverlayX = prefs.getInt("floating_overlay_x", 0),
+                floatingOverlayY = prefs.getInt("floating_overlay_y", 64),
+                proximitySensorEnabled = prefs.getBoolean("proximity_enabled", true),
+                proximityMode = runCatching { ProximityMode.valueOf(proxName) }.getOrDefault(ProximityMode.SCREEN_OFF),
+                rootEnhancementsEnabled = prefs.getBoolean("root_enhancements_enabled", true),
+                recordingMode = runCatching { RecordingMode.valueOf(recModeName) }.getOrDefault(RecordingMode.MANUAL),
+                recordingEngine = runCatching { RecordingEngine.valueOf(recEngineName) }
+                    .getOrDefault(RecordingEngine.ROOT_VOICE_CALL),
+                recordingSaveLocation = runCatching { RecordingSaveLocation.valueOf(recLocName) }
+                    .getOrDefault(RecordingSaveLocation.CUSTOM_FOLDER),
+                recordingCustomTreeUri = prefs.getString("recording_custom_tree_uri", "") ?: "",
+                showCallRecordingInDetails = prefs.getBoolean("show_call_recording_in_details", true),
+                enableDuplicateMergeSuggestions = prefs.getBoolean("enable_merge_suggestions", true),
+                blockUnknownPrivateNumbers = prefs.getBoolean("block_unknown_private", false),
+                blockForeignInternationalNumbers = prefs.getBoolean("block_foreign_international", false),
+                blockUnsavedNumbers = prefs.getBoolean("block_unsaved_numbers", false),
+                showBlockedCallNotifications = prefs.getBoolean("show_blocked_call_notifications", true),
+                voiceEffectPreset = runCatching { VoiceEffectPreset.valueOf(voicePresetName) }
+                    .getOrDefault(VoiceEffectPreset.DISABLED),
+                missedCallReminderInterval = runCatching { MissedCallReminderInterval.valueOf(missedRemName) }
+                    .getOrDefault(MissedCallReminderInterval.OFF),
+                flashTorchOnIncomingCall = prefs.getBoolean("flash_torch_incoming", false)
+            )
+        }
+
+        fun syncResolvedDarkTheme(context: Context, isDark: Boolean) {
+            val sp = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val current = getOrInitSharedFlow(sp)
+            if (current.value.isResolvedDarkTheme != isDark || !sp.contains("resolved_dark_theme")) {
+                sp.edit().putBoolean("resolved_dark_theme", isDark).apply()
+                current.value = readFromPrefs(sp)
+            }
+        }
+    }
+
+    private fun loadFromPrefs(): DialerSettings = readFromPrefs(prefs)
+
+    private fun update(block: SharedPreferences.Editor.() -> Unit) {
+        prefs.edit().apply(block).apply()
+        _settings.value = loadFromPrefs()
+    }
+
+    fun setThemeMode(mode: ThemeMode) = update { putString("theme_mode", mode.name) }
+    fun setMaterialYouEnabled(enabled: Boolean) = update { putBoolean("material_you_enabled", enabled) }
+    fun setUseAmoledPureBlack(enabled: Boolean) = update { putBoolean("use_amoled_pure_black", enabled) }
+    fun setGlassBlurStrength(value: Float) = update { putFloat("glass_blur_strength", value.coerceIn(0.2f, 1.0f)) }
+    fun setGlassTintAlpha(value: Float) = update { putFloat("glass_tint_alpha", value.coerceIn(0.25f, 0.98f)) }
+    fun setCallMergeMode(mode: CallMergeMode) = update { putString("call_merge_mode", mode.name) }
+    fun setIgnoreDefaultSim(enabled: Boolean) = update { putBoolean("ignore_default_sim", enabled) }
+    fun setAskSimOnRecentsCall(enabled: Boolean) = update { putBoolean("ask_sim_recents", enabled) }
+    fun setEnableDialpadTones(enabled: Boolean) = update { putBoolean("enable_dialpad_tones", enabled) }
+    fun setIncomingVibrationPattern(pattern: IncomingVibrationPattern) =
+        update { putString("incoming_vibration_pattern", pattern.name) }
+    fun setCallWaitingAlertMode(mode: CallWaitingAlertMode) =
+        update { putString("call_waiting_alert_mode", mode.name) }
+    fun setCallWindowPreference(pref: CallWindowPreference) =
+        update { putString("call_window_pref", pref.name) }
+    fun setUseSystemInCallUi(enabled: Boolean) = update { putBoolean("use_system_incall_ui", enabled) }
+    fun setFloatingWindowOpacity(opacity: Float) =
+        update { putFloat("floating_window_opacity", opacity.coerceIn(0.45f, 1.0f)) }
+    fun setFirstPopupWidthDp(widthDp: Int) = update {
+        val clamped = widthDp.coerceIn(260, 380)
+        putInt("first_popup_width_dp", clamped)
+        putInt("second_popup_width_dp", clamped)
+    }
+    fun setFirstPopupHeightScale(scale: Float) = update {
+        val clamped = scale.coerceIn(0.75f, 1.35f)
+        putFloat("first_popup_height_scale", clamped)
+        putFloat("second_popup_height_scale", clamped)
+    }
+    fun setSecondPopupWidthDp(widthDp: Int) = update {
+        val clamped = widthDp.coerceIn(260, 380)
+        putInt("first_popup_width_dp", clamped)
+        putInt("second_popup_width_dp", clamped)
+    }
+    fun setSecondPopupHeightScale(scale: Float) = update {
+        val clamped = scale.coerceIn(0.75f, 1.35f)
+        putFloat("first_popup_height_scale", clamped)
+        putFloat("second_popup_height_scale", clamped)
+    }
+
+    fun setFloatingOverlayPosition(x: Int, y: Int) = update {
+        putInt("floating_overlay_x", x)
+        putInt("floating_overlay_y", y)
+    }
+
+    fun resetFloatingOverlayCustomizations() = update {
+        putFloat("floating_window_opacity", 0.85f)
+        putInt("first_popup_width_dp", 350)
+        putFloat("first_popup_height_scale", 0.94f)
+        putInt("second_popup_width_dp", 350)
+        putFloat("second_popup_height_scale", 0.94f)
+        putInt("floating_overlay_x", 0)
+        putInt("floating_overlay_y", 64)
+    }
+
+    fun setProximitySensorEnabled(enabled: Boolean) = update { putBoolean("proximity_enabled", enabled) }
+    fun setProximityMode(mode: ProximityMode) = update { putString("proximity_mode", mode.name) }
+    fun setRootEnhancementsEnabled(enabled: Boolean) =
+        update { putBoolean("root_enhancements_enabled", enabled) }
+    fun setRecordingMode(mode: RecordingMode) = update { putString("recording_mode", mode.name) }
+    fun setRecordingEngine(engine: RecordingEngine) = update { putString("recording_engine", engine.name) }
+    fun setRecordingSaveLocation(location: RecordingSaveLocation) =
+        update { putString("recording_save_location", location.name) }
+    fun setRecordingCustomTreeUri(uriString: String) =
+        update { putString("recording_custom_tree_uri", uriString) }
+    fun setShowCallRecordingInDetails(enabled: Boolean) =
+        update { putBoolean("show_call_recording_in_details", enabled) }
+    fun setEnableDuplicateMergeSuggestions(enabled: Boolean) =
+        update { putBoolean("enable_merge_suggestions", enabled) }
+    fun setBlockUnknownPrivateNumbers(enabled: Boolean) =
+        update { putBoolean("block_unknown_private", enabled) }
+    fun setBlockForeignInternationalNumbers(enabled: Boolean) =
+        update { putBoolean("block_foreign_international", enabled) }
+    fun setBlockUnsavedNumbers(enabled: Boolean) =
+        update { putBoolean("block_unsaved_numbers", enabled) }
+    fun setShowBlockedCallNotifications(enabled: Boolean) =
+        update { putBoolean("show_blocked_call_notifications", enabled) }
+    fun setVoiceEffectPreset(preset: VoiceEffectPreset) =
+        update { putString("voice_effect_preset", preset.name) }
+    fun setMissedCallReminderInterval(interval: MissedCallReminderInterval) =
+        update { putString("missed_call_reminder_interval", interval.name) }
+    fun setFlashTorchOnIncomingCall(enabled: Boolean) =
+        update { putBoolean("flash_torch_incoming", enabled) }
+
+    fun reload() {
+        _settings.value = loadFromPrefs()
+    }
+
+    fun exportToJson(): JSONObject {
+        val s = _settings.value
+        return JSONObject().apply {
+            put("theme_mode", s.themeMode.name)
+            put("material_you_enabled", s.materialYouEnabled)
+            put("use_amoled_pure_black", s.useAmoledPureBlack)
+            put("glass_blur_strength", s.glassBlurStrength.toDouble())
+            put("glass_tint_alpha", s.glassTintAlpha.toDouble())
+            put("call_merge_mode", s.callMergeMode.name)
+            put("ignore_default_sim", s.ignoreDefaultSim)
+            put("ask_sim_recents", s.askSimOnRecentsCall)
+            put("enable_dialpad_tones", s.enableDialpadTones)
+            put("incoming_vibration_pattern", s.incomingVibrationPattern.name)
+            put("call_waiting_alert_mode", s.callWaitingAlertMode.name)
+            put("call_window_pref", s.callWindowPreference.name)
+            put("use_system_incall_ui", s.useSystemInCallUi)
+            put("floating_window_opacity", s.floatingWindowOpacity.toDouble())
+            put("first_popup_width_dp", s.firstPopupWidthDp)
+            put("first_popup_height_scale", s.firstPopupHeightScale.toDouble())
+            put("second_popup_width_dp", s.secondPopupWidthDp)
+            put("second_popup_height_scale", s.secondPopupHeightScale.toDouble())
+            put("floating_overlay_x", s.floatingOverlayX)
+            put("floating_overlay_y", s.floatingOverlayY)
+            put("proximity_enabled", s.proximitySensorEnabled)
+            put("proximity_mode", s.proximityMode.name)
+            put("root_enhancements_enabled", s.rootEnhancementsEnabled)
+            put("recording_mode", s.recordingMode.name)
+            put("recording_engine", s.recordingEngine.name)
+            put("recording_save_location", s.recordingSaveLocation.name)
+            put("recording_custom_tree_uri", s.recordingCustomTreeUri)
+            put("show_call_recording_in_details", s.showCallRecordingInDetails)
+            put("enable_merge_suggestions", s.enableDuplicateMergeSuggestions)
+            put("block_unknown_private", s.blockUnknownPrivateNumbers)
+            put("block_foreign_international", s.blockForeignInternationalNumbers)
+            put("block_unsaved_numbers", s.blockUnsavedNumbers)
+            put("show_blocked_call_notifications", s.showBlockedCallNotifications)
+            put("voice_effect_preset", s.voiceEffectPreset.name)
+            put("missed_call_reminder_interval", s.missedCallReminderInterval.name)
+            put("flash_torch_incoming", s.flashTorchOnIncomingCall)
+        }
+    }
+
+    fun importFromJson(obj: JSONObject): Int {
+        var appliedCount = 0
+        update {
+            fun putEnum(key: String, validCheck: (String) -> Boolean) {
+                if (obj.has(key)) {
+                    val v = obj.optString(key, "")
+                    if (v.isNotBlank() && validCheck(v)) {
+                        putString(key, v)
+                        appliedCount++
+                    }
+                }
+            }
+
+            fun putBool(key: String) {
+                if (obj.has(key)) {
+                    putBoolean(key, obj.optBoolean(key))
+                    appliedCount++
+                }
+            }
+
+            putEnum("theme_mode") { runCatching { ThemeMode.valueOf(it) }.isSuccess }
+            putBool("material_you_enabled")
+            putBool("use_amoled_pure_black")
+            if (obj.has("glass_blur_strength")) {
+                putFloat("glass_blur_strength", obj.optDouble("glass_blur_strength", 0.78).toFloat().coerceIn(0.2f, 1.0f))
+                appliedCount++
+            }
+            if (obj.has("glass_tint_alpha")) {
+                putFloat("glass_tint_alpha", obj.optDouble("glass_tint_alpha", 0.68).toFloat().coerceIn(0.25f, 0.98f))
+                appliedCount++
+            }
+            putEnum("call_merge_mode") { runCatching { CallMergeMode.valueOf(it) }.isSuccess }
+            putBool("ignore_default_sim")
+            putBool("ask_sim_recents")
+            putBool("enable_dialpad_tones")
+            putEnum("incoming_vibration_pattern") { runCatching { IncomingVibrationPattern.valueOf(it) }.isSuccess }
+            putEnum("call_waiting_alert_mode") { runCatching { CallWaitingAlertMode.valueOf(it) }.isSuccess }
+            putEnum("call_window_pref") { runCatching { CallWindowPreference.valueOf(it) }.isSuccess }
+            putBool("use_system_incall_ui")
+            if (obj.has("floating_window_opacity")) {
+                putFloat("floating_window_opacity", obj.optDouble("floating_window_opacity", 0.85).toFloat().coerceIn(0.45f, 1.0f))
+                appliedCount++
+            }
+            if (obj.has("first_popup_width_dp")) {
+                putInt("first_popup_width_dp", obj.optInt("first_popup_width_dp", 352).coerceIn(260, 380))
+                appliedCount++
+            }
+            if (obj.has("first_popup_height_scale")) {
+                putFloat("first_popup_height_scale", obj.optDouble("first_popup_height_scale", 0.90).toFloat().coerceIn(0.75f, 1.35f))
+                appliedCount++
+            }
+            if (obj.has("second_popup_width_dp")) {
+                putInt("second_popup_width_dp", obj.optInt("second_popup_width_dp", 340).coerceIn(260, 380))
+                appliedCount++
+            }
+            if (obj.has("second_popup_height_scale")) {
+                putFloat("second_popup_height_scale", obj.optDouble("second_popup_height_scale", 0.94).toFloat().coerceIn(0.75f, 1.35f))
+                appliedCount++
+            }
+            if (obj.has("floating_overlay_x")) {
+                putInt("floating_overlay_x", obj.optInt("floating_overlay_x", 0))
+                appliedCount++
+            }
+            if (obj.has("floating_overlay_y")) {
+                putInt("floating_overlay_y", obj.optInt("floating_overlay_y", 64))
+                appliedCount++
+            }
+            putBool("proximity_enabled")
+            putEnum("proximity_mode") { runCatching { ProximityMode.valueOf(it) }.isSuccess }
+            putBool("root_enhancements_enabled")
+            putEnum("recording_mode") { runCatching { RecordingMode.valueOf(it) }.isSuccess }
+            putEnum("recording_engine") { runCatching { RecordingEngine.valueOf(it) }.isSuccess }
+            putEnum("recording_save_location") { runCatching { RecordingSaveLocation.valueOf(it) }.isSuccess }
+            if (obj.has("recording_custom_tree_uri")) {
+                putString("recording_custom_tree_uri", obj.optString("recording_custom_tree_uri", ""))
+                appliedCount++
+            }
+            putBool("show_call_recording_in_details")
+            putBool("enable_merge_suggestions")
+            putBool("block_unknown_private")
+            putBool("block_foreign_international")
+            putBool("block_unsaved_numbers")
+            putBool("show_blocked_call_notifications")
+            putEnum("voice_effect_preset") { runCatching { VoiceEffectPreset.valueOf(it) }.isSuccess }
+            putEnum("missed_call_reminder_interval") { runCatching { MissedCallReminderInterval.valueOf(it) }.isSuccess }
+            putBool("flash_torch_incoming")
+        }
+        return appliedCount
     }
-
-    private constructor() {
-        // -> Object.<init>()
-    }
-
-    fun clearAllBlockedCallCounts$default(p0: AppPreferences, p1: Context, p2: Long, p3: Int, p4: Any) {
-        // -> System.currentTimeMillis()
-        // -> AppPreferences.clearAllBlockedCallCounts()
-    }
-
-    private fun prefs(context: Context): SharedPreferences {
-        // Strings: "hyper_xos_dialer_prefs", "getSharedPreferences(...)"
-        // -> Context.getApplicationContext()
-        // -> Context.getSharedPreferences()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun clearAllBlockedCallCounts(context: Context, resetCutoffMs: Long) {
-        // Strings: "context", "blocked_notif_reset_cutoff_ms", "blocked_notif_counts_json", "last_blocked_call_at_ms", "last_observed_blocked_log_ms"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getLong()
-        // -> Math.max()
-        // -> SharedPreferences.edit()
-        // -> SharedPreferences$Editor.remove()
-        // -> SharedPreferences$Editor.putLong()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun clearBlockedCallCount(context: Context, key: String) {
-        // Strings: "context", "key", "unknown", "blocked_notif_counts_json"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.isBlank()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> JSONObject.<init>()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> JSONObject.has()
-        // -> JSONObject.remove()
-        // -> SharedPreferences.edit()
-        // -> JSONObject.toString()
-        // -> SharedPreferences$Editor.putString()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun findMatchingMetadata(allMeta: List<*>, normalizedNumber: String, timestampMillis: Long): CallExtraMetadata {
-        // Strings: "allMeta", "normalizedNumber"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.isBlank()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> CallExtraMetadata.getNormalizedNumber()
-        // -> Intrinsics.areEqual()
-        // -> CallExtraMetadata.getTimestampMillis()
-        // -> Math.abs()
-        TODO("Decoded 46 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBlockedCallCount(context: Context, key: String): Int {
-        // Strings: "context", "key", "unknown", "blocked_notif_counts_json"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.isBlank()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> JSONObject.<init>()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> JSONObject.optInt()
-        TODO("Decoded 55 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBlockedResetCutoffMs(context: Context): Long {
-        // Strings: "context", "blocked_notif_reset_cutoff_ms"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getLong()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLastBlockedCallTimestamp(context: Context): Long {
-        // Strings: "context", "last_blocked_call_at_ms"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getLong()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLastObservedBlockedLogTimestamp(context: Context): Long {
-        // Strings: "context", "last_observed_blocked_log_ms"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getLong()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSavedContactsFilterKey(context: Context): String {
-        // Strings: "context", "contacts_account_filter_key"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> StringsKt.isBlank()
-        TODO("Decoded 18 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSavedRecentsFilter(context: Context): String {
-        // Strings: "context", "recents_filter_saved"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSettings(): StateFlow {
-        // Fields: AppPreferences.settings
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getTotalBlockedCallCountSinceReset(context: Context): Int {
-        // Strings: "context", "blocked_notif_counts_json"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> JSONObject.<init>()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> JSONObject.keys()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> JSONObject.optInt()
-        TODO("Decoded 55 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun hasOsBlocklistBaseline(context: Context): Boolean {
-        // Strings: "context", "os_blocklist_baseline_synced"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getBoolean()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun incrementBlockedCallCount(context: Context, key: String): Int {
-        // Strings: "context", "key", "unknown", "blocked_notif_counts_json", "last_blocked_call_at_ms"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.isBlank()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> JSONObject.<init>()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> JSONObject.optInt()
-        // -> JSONObject.put()
-        // -> SharedPreferences.edit()
-        // -> JSONObject.toString()
-        // -> SharedPreferences$Editor.putString()
-        // -> System.currentTimeMillis()
-        // -> SharedPreferences$Editor.putLong()
-        // -> SharedPreferences$Editor.apply()
-        TODO("Decoded 71 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun init(context: Context): DialerSettings {
-        // Strings: "context", "theme_mode", "AUTO", "amoled_black", "use_dynamic_color", "call_merge_mode", "TODAY_ONLY", "incoming_window_mode", "FLOATING_XOS", "disable_custom_incall_ui", "recording_mode", "MANUAL", "recording_engine", "recording_save_location", "APP_STORAGE", "recording_custom_tree_uri"
-        // Fields: AppPreferences.initialized, AppPreferences._settings, Result.Companion, ThemeMode.AUTO, CallMergeMode.TODAY_ONLY, CallWindowPreference.FLOATING_XOS, RecordingMode.MANUAL, RecordingEngine.AUTO, RecordingSaveLocation.APP_STORAGE, ProximityMode.SCREEN_OFF, IncomingVibrationPattern.SYSTEM_DEFAULT, CallWaitingAlertMode.SYSTEM_DEFAULT
-        // -> Intrinsics.checkNotNullParameter()
-        // -> MutableStateFlow.getValue()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> ThemeMode.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> SharedPreferences.getBoolean()
-        // -> CallMergeMode.valueOf()
-        // -> CallWindowPreference.valueOf()
-        // -> RecordingMode.valueOf()
-        // -> RecordingEngine.valueOf()
-        // -> RecordingSaveLocation.valueOf()
-        // -> CollectionsKt.emptyList()
-        // -> JSONArray.<init>()
-        // -> JSONArray.length()
-        // -> ArrayList.<init>()
-        // -> JSONArray.optString()
-        // -> ArrayList.add()
-        TODO("Decoded 494 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun isDefaultDialerBannerDismissed(context: Context): Boolean {
-        // Strings: "context", "default_dialer_banner_dismissed"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getBoolean()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun isSingleBlockedCallerSinceReset(context: Context, key: String): Boolean {
-        // Strings: "context", "key", "unknown", "blocked_notif_counts_json"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.isBlank()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> JSONObject.<init>()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> JSONObject.length()
-        // -> JSONObject.has()
-        TODO("Decoded 66 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun loadAllCallExtraMetadata(context: Context): List<*> {
-        // Strings: "optString(...)", "context", "call_extra_meta_json", "num", "ts", "ring", "reason", "badge", "NORMAL"
-        // Fields: Result.Companion, CallNetworkBadge.NORMAL
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> CollectionsKt.emptyList()
-        // -> JSONArray.<init>()
-        // -> CollectionsKt.createListBuilder()
-        // -> JSONArray.length()
-        // -> JSONArray.getJSONObject()
-        // -> JSONObject.optString()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> JSONObject.optLong()
-        // -> Intrinsics.checkNotNull()
-        // -> StringsKt.isBlank()
-        // -> CallNetworkBadge.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> CallExtraMetadata.<init>()
-        // -> List.add()
-        // -> CollectionsKt.build()
-        TODO("Decoded 118 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun loadCachedRecentCallLogs(context: Context): List<*> {
-        // Strings: "simCol", "optString(...)", "context", "cached_recent_call_logs_json", "id", "num", "name", "dir", "UNKNOWN", "ts", "dur", "vid", "simLbl", "simCar", "simSlot", "photo"
-        // Fields: Result.Companion, CallDirection.UNKNOWN, CallNetworkBadge.VOLTE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> CollectionsKt.emptyList()
-        // -> JSONArray.<init>()
-        // -> CollectionsKt.createListBuilder()
-        // -> JSONArray.length()
-        // -> JSONArray.getJSONObject()
-        // -> JSONObject.optLong()
-        // -> JSONObject.optString()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> Intrinsics.checkNotNull()
-        // -> StringsKt.isBlank()
-        // -> CallDirection.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> JSONObject.optBoolean()
-        // -> JSONObject.optInt()
-        // -> JSONObject.has()
-        TODO("Decoded 245 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun loadLocalBlocklist(context: Context): List<*> {
-        // Strings: "context", "local_blocklist_json", "number", "getString(...)", "synced", "added", "note"
-        // Fields: Result.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.getString()
-        // -> CollectionsKt.emptyList()
-        // -> JSONArray.<init>()
-        // -> CollectionsKt.createListBuilder()
-        // -> JSONArray.length()
-        // -> JSONArray.getJSONObject()
-        // -> JSONObject.getString()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> JSONObject.optBoolean()
-        // -> System.currentTimeMillis()
-        // -> JSONObject.optLong()
-        // -> JSONObject.optString()
-        // -> Intrinsics.checkNotNull()
-        // -> StringsKt.isBlank()
-        // -> BlockedNumberEntry.<init>()
-        // -> List.add()
-        // -> CollectionsKt.build()
-        // -> Result.constructor-impl()
-        TODO("Decoded 90 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun saveCachedRecentCallLogs(context: Context, entries: List<*>) {
-        // Strings: "context", "entries", "id", "num", "name", "dir", "ts", "dur", "vid", "simLbl", "simCar", "simSlot", "simCol", "photo", "iso", "badge"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> CollectionsKt.take()
-        // -> JSONArray.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> JSONObject.<init>()
-        // -> CallLogEntry.getId()
-        // -> JSONObject.put()
-        // -> CallLogEntry.getNumber()
-        // -> CallLogEntry.getCachedName()
-        // -> CallLogEntry.getDirection()
-        // -> CallDirection.name()
-        // -> CallLogEntry.getTimestampMillis()
-        // -> CallLogEntry.getDurationSeconds()
-        // -> CallLogEntry.isVideoCall()
-        // -> CallLogEntry.getSimSlotLabel()
-        // -> CallLogEntry.getSimCarrierName()
-        // -> CallLogEntry.getSimSlotNumber()
-        // -> CallLogEntry.getSimColorArgb()
-    }
-
-    fun saveCallExtraMetadata(context: Context, item: CallExtraMetadata) {
-        // Strings: "context", "item", "num", "ts", "ring", "reason", "badge", "call_extra_meta_json"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.loadAllCallExtraMetadata()
-        // -> CollectionsKt.toMutableList()
-        // -> List.add()
-        // -> CollectionsKt.take()
-        // -> JSONArray.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> JSONObject.<init>()
-        // -> CallExtraMetadata.getNormalizedNumber()
-        // -> JSONObject.put()
-        // -> CallExtraMetadata.getTimestampMillis()
-        // -> CallExtraMetadata.getRingDurationSeconds()
-        // -> CallExtraMetadata.getDisconnectReason()
-        // -> CallExtraMetadata.getNetworkBadge()
-        // -> CallNetworkBadge.name()
-        // -> JSONArray.put()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-    }
-
-    fun saveLocalBlocklist(context: Context, entries: List<*>) {
-        // Strings: "context", "entries", "number", "synced", "added", "note", "local_blocklist_json"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> JSONArray.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> JSONObject.<init>()
-        // -> BlockedNumberEntry.getNumber()
-        // -> JSONObject.put()
-        // -> BlockedNumberEntry.getSyncedWithSystem()
-        // -> BlockedNumberEntry.getAddedTimestamp()
-        // -> BlockedNumberEntry.getNote()
-        // -> JSONArray.put()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> JSONArray.toString()
-        // -> SharedPreferences$Editor.putString()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun setDefaultDialerBannerDismissed(context: Context, dismissed: Boolean) {
-        // Strings: "context", "default_dialer_banner_dismissed"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> SharedPreferences$Editor.putBoolean()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun setLastObservedBlockedLogTimestamp(context: Context, timestampMillis: Long) {
-        // Strings: "context", "last_observed_blocked_log_ms"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> SharedPreferences$Editor.putLong()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun setOsBlocklistBaseline(context: Context, synced: Boolean) {
-        // Strings: "context", "os_blocklist_baseline_synced"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> SharedPreferences$Editor.putBoolean()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun setSavedContactsFilterKey(context: Context, filterKey: String) {
-        // Strings: "context", "contacts_account_filter_key"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> SharedPreferences$Editor.putString()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun setSavedRecentsFilter(context: Context, filterName: String) {
-        // Strings: "context", "filterName", "recents_filter_saved"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> SharedPreferences$Editor.putString()
-        // -> SharedPreferences$Editor.apply()
-    }
-
-    fun updateSettings(context: Context, transform: Function1) {
-        // Strings: "context", "transform", "theme_mode", "amoled_black", "use_dynamic_color", "call_merge_mode", "incoming_window_mode", "disable_custom_incall_ui", "recording_mode", "recording_engine", "recording_save_location", "recording_custom_tree_uri", "show_rec_in_details", "block_unknown_numbers", "block_foreign_numbers", "block_unsaved_numbers"
-        // Fields: AppPreferences._settings
-        // -> Intrinsics.checkNotNullParameter()
-        // -> AppPreferences.init()
-        // -> MutableStateFlow.getValue()
-        // -> Function1.invoke()
-        // -> DialerSettings.getFloatingWindowAlpha()
-        // -> RangesKt.coerceIn()
-        // -> DialerSettings.getFloatingWindowWidthDp()
-        // -> DialerSettings.getFloatingWindowHeightScale()
-        // -> DialerSettings.getWaitingWindowWidthDp()
-        // -> DialerSettings.getWaitingWindowHeightScale()
-        // -> DialerSettings.copy$default()
-        // -> MutableStateFlow.setValue()
-        // -> AppPreferences.prefs()
-        // -> SharedPreferences.edit()
-        // -> DialerSettings.getThemeMode()
-        // -> ThemeMode.name()
-        // -> SharedPreferences$Editor.putString()
-        // -> DialerSettings.getUseAmoledPureBlack()
-        // -> SharedPreferences$Editor.putBoolean()
-        // -> DialerSettings.getUseDynamicColor()
-    }
-
-}
-
-class DialerSettings {
-    val askSimOnRecentsCall: Boolean
-    val blockForeignNumbers: Boolean
-    val blockUnknownNumbers: Boolean
-    val blockUnsavedNumbers: Boolean
-    val blockedPrefixes: List<*>
-    val callMergeMode: CallMergeMode
-    val callWaitingAlertMode: CallWaitingAlertMode
-    val disableCustomInCallUi: Boolean
-    val enableDialpadTones: Boolean
-    val enableDuplicateMergeSuggestions: Boolean
-    val enableProximitySensor: Boolean
-    val enableRootEnhancements: Boolean
-    val enableShizukuEnhancements: Boolean
-    val floatingWindowAlpha: Float
-    val floatingWindowHeightScale: Float
-    val floatingWindowWidthDp: Int
-    val ignoreDefaultSim: Boolean
-    val incomingVibrationPattern: IncomingVibrationPattern
-    val incomingWindowMode: CallWindowPreference
-    val proximityMode: ProximityMode
-    val recordingCustomTreeUri: String
-    val recordingEngine: RecordingEngine
-    val recordingMode: RecordingMode
-    val recordingSaveLocation: RecordingSaveLocation
-    val showBlockedWarningOnCallUi: Boolean
-    val showRecordingsInCallDetails: Boolean
-    val themeMode: ThemeMode
-    val useAmoledPureBlack: Boolean
-    val useDynamicColor: Boolean
-    val vibrateOnAnswer: Boolean
-    val waitingWindowHeightScale: Float
-    val waitingWindowWidthDp: Int
-
-    constructor() {
-        // -> DialerSettings.<init>()
-    }
-
-    constructor(themeMode: ThemeMode, useAmoledPureBlack: Boolean, useDynamicColor: Boolean, callMergeMode: CallMergeMode, incomingWindowMode: CallWindowPreference, disableCustomInCallUi: Boolean, recordingMode: RecordingMode, recordingEngine: RecordingEngine, recordingSaveLocation: RecordingSaveLocation, recordingCustomTreeUri: String, showRecordingsInCallDetails: Boolean, blockUnknownNumbers: Boolean, blockForeignNumbers: Boolean, blockUnsavedNumbers: Boolean, blockedPrefixes: List<*>, enableRootEnhancements: Boolean, enableShizukuEnhancements: Boolean, vibrateOnAnswer: Boolean, ignoreDefaultSim: Boolean, askSimOnRecentsCall: Boolean, enableDuplicateMergeSuggestions: Boolean, enableProximitySensor: Boolean, proximityMode: ProximityMode, enableDialpadTones: Boolean, incomingVibrationPattern: IncomingVibrationPattern, callWaitingAlertMode: CallWaitingAlertMode, showBlockedWarningOnCallUi: Boolean, floatingWindowAlpha: Float, floatingWindowWidthDp: Int, floatingWindowHeightScale: Float, waitingWindowWidthDp: Int, waitingWindowHeightScale: Float) {
-        // Strings: "themeMode", "callMergeMode", "incomingWindowMode", "recordingMode", "recordingEngine", "recordingSaveLocation", "blockedPrefixes", "proximityMode", "incomingVibrationPattern", "callWaitingAlertMode"
-        // Fields: DialerSettings.themeMode, DialerSettings.useAmoledPureBlack, DialerSettings.useDynamicColor, DialerSettings.callMergeMode, DialerSettings.incomingWindowMode, DialerSettings.disableCustomInCallUi, DialerSettings.recordingMode, DialerSettings.recordingEngine, DialerSettings.recordingSaveLocation, DialerSettings.recordingCustomTreeUri, DialerSettings.showRecordingsInCallDetails, DialerSettings.blockUnknownNumbers
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Object.<init>()
-    }
-
-    constructor(p0: ThemeMode, p1: Boolean, p2: Boolean, p3: CallMergeMode, p4: CallWindowPreference, p5: Boolean, p6: RecordingMode, p7: RecordingEngine, p8: RecordingSaveLocation, p9: String, p10: Boolean, p11: Boolean, p12: Boolean, p13: Boolean, p14: List<*>, p15: Boolean, p16: Boolean, p17: Boolean, p18: Boolean, p19: Boolean, p20: Boolean, p21: Boolean, p22: ProximityMode, p23: Boolean, p24: IncomingVibrationPattern, p25: CallWaitingAlertMode, p26: Boolean, p27: Float, p28: Int, p29: Float, p30: Int, p31: Float, p32: Int, p33: DefaultConstructorMarker) {
-        // Fields: ThemeMode.AUTO, CallMergeMode.TODAY_ONLY, CallWindowPreference.FLOATING_XOS, RecordingMode.MANUAL, RecordingEngine.AUTO, RecordingSaveLocation.APP_STORAGE, ProximityMode.SCREEN_OFF, IncomingVibrationPattern.SYSTEM_DEFAULT, CallWaitingAlertMode.SYSTEM_DEFAULT
-        // -> CollectionsKt.emptyList()
-        // -> DialerSettings.<init>()
-    }
-
-    fun copy$default(p0: DialerSettings, p1: ThemeMode, p2: Boolean, p3: Boolean, p4: CallMergeMode, p5: CallWindowPreference, p6: Boolean, p7: RecordingMode, p8: RecordingEngine, p9: RecordingSaveLocation, p10: String, p11: Boolean, p12: Boolean, p13: Boolean, p14: Boolean, p15: List<*>, p16: Boolean, p17: Boolean, p18: Boolean, p19: Boolean, p20: Boolean, p21: Boolean, p22: Boolean, p23: ProximityMode, p24: Boolean, p25: IncomingVibrationPattern, p26: CallWaitingAlertMode, p27: Boolean, p28: Float, p29: Int, p30: Float, p31: Int, p32: Float, p33: Int, p34: Any): DialerSettings {
-        // Fields: DialerSettings.themeMode, DialerSettings.useAmoledPureBlack, DialerSettings.useDynamicColor, DialerSettings.callMergeMode, DialerSettings.incomingWindowMode, DialerSettings.disableCustomInCallUi, DialerSettings.recordingMode, DialerSettings.recordingEngine, DialerSettings.recordingSaveLocation, DialerSettings.recordingCustomTreeUri, DialerSettings.showRecordingsInCallDetails, DialerSettings.blockUnknownNumbers
-        // -> DialerSettings.copy()
-        TODO("Decoded 262 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component1(): ThemeMode {
-        // Fields: DialerSettings.themeMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component10(): String {
-        // Fields: DialerSettings.recordingCustomTreeUri
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component11(): Boolean {
-        // Fields: DialerSettings.showRecordingsInCallDetails
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component12(): Boolean {
-        // Fields: DialerSettings.blockUnknownNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component13(): Boolean {
-        // Fields: DialerSettings.blockForeignNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component14(): Boolean {
-        // Fields: DialerSettings.blockUnsavedNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component15(): List<*> {
-        // Fields: DialerSettings.blockedPrefixes
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component16(): Boolean {
-        // Fields: DialerSettings.enableRootEnhancements
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component17(): Boolean {
-        // Fields: DialerSettings.enableShizukuEnhancements
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component18(): Boolean {
-        // Fields: DialerSettings.vibrateOnAnswer
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component19(): Boolean {
-        // Fields: DialerSettings.ignoreDefaultSim
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component2(): Boolean {
-        // Fields: DialerSettings.useAmoledPureBlack
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component20(): Boolean {
-        // Fields: DialerSettings.askSimOnRecentsCall
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component21(): Boolean {
-        // Fields: DialerSettings.enableDuplicateMergeSuggestions
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component22(): Boolean {
-        // Fields: DialerSettings.enableProximitySensor
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component23(): ProximityMode {
-        // Fields: DialerSettings.proximityMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component24(): Boolean {
-        // Fields: DialerSettings.enableDialpadTones
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component25(): IncomingVibrationPattern {
-        // Fields: DialerSettings.incomingVibrationPattern
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component26(): CallWaitingAlertMode {
-        // Fields: DialerSettings.callWaitingAlertMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component27(): Boolean {
-        // Fields: DialerSettings.showBlockedWarningOnCallUi
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component28(): Float {
-        // Fields: DialerSettings.floatingWindowAlpha
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component29(): Int {
-        // Fields: DialerSettings.floatingWindowWidthDp
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component3(): Boolean {
-        // Fields: DialerSettings.useDynamicColor
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component30(): Float {
-        // Fields: DialerSettings.floatingWindowHeightScale
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component31(): Int {
-        // Fields: DialerSettings.waitingWindowWidthDp
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component32(): Float {
-        // Fields: DialerSettings.waitingWindowHeightScale
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component4(): CallMergeMode {
-        // Fields: DialerSettings.callMergeMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component5(): CallWindowPreference {
-        // Fields: DialerSettings.incomingWindowMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component6(): Boolean {
-        // Fields: DialerSettings.disableCustomInCallUi
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component7(): RecordingMode {
-        // Fields: DialerSettings.recordingMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component8(): RecordingEngine {
-        // Fields: DialerSettings.recordingEngine
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component9(): RecordingSaveLocation {
-        // Fields: DialerSettings.recordingSaveLocation
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun copy(p0: ThemeMode, p1: Boolean, p2: Boolean, p3: CallMergeMode, p4: CallWindowPreference, p5: Boolean, p6: RecordingMode, p7: RecordingEngine, p8: RecordingSaveLocation, p9: String, p10: Boolean, p11: Boolean, p12: Boolean, p13: Boolean, p14: List<*>, p15: Boolean, p16: Boolean, p17: Boolean, p18: Boolean, p19: Boolean, p20: Boolean, p21: Boolean, p22: ProximityMode, p23: Boolean, p24: IncomingVibrationPattern, p25: CallWaitingAlertMode, p26: Boolean, p27: Float, p28: Int, p29: Float, p30: Int, p31: Float): DialerSettings {
-        // Strings: "themeMode", "callMergeMode", "incomingWindowMode", "recordingMode", "recordingEngine", "recordingSaveLocation", "blockedPrefixes", "proximityMode", "incomingVibrationPattern", "callWaitingAlertMode"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> DialerSettings.<init>()
-        TODO("Decoded 59 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun equals(p0: Any): Boolean {
-        // Fields: DialerSettings.themeMode, DialerSettings.useAmoledPureBlack, DialerSettings.useDynamicColor, DialerSettings.callMergeMode, DialerSettings.incomingWindowMode, DialerSettings.disableCustomInCallUi, DialerSettings.recordingMode, DialerSettings.recordingEngine, DialerSettings.recordingSaveLocation, DialerSettings.recordingCustomTreeUri, DialerSettings.showRecordingsInCallDetails, DialerSettings.blockUnknownNumbers
-        // -> Intrinsics.areEqual()
-        // -> Float.compare()
-        TODO("Decoded 148 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAskSimOnRecentsCall(): Boolean {
-        // Fields: DialerSettings.askSimOnRecentsCall
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBlockForeignNumbers(): Boolean {
-        // Fields: DialerSettings.blockForeignNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBlockUnknownNumbers(): Boolean {
-        // Fields: DialerSettings.blockUnknownNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBlockUnsavedNumbers(): Boolean {
-        // Fields: DialerSettings.blockUnsavedNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBlockedPrefixes(): List<*> {
-        // Fields: DialerSettings.blockedPrefixes
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getCallMergeMode(): CallMergeMode {
-        // Fields: DialerSettings.callMergeMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getCallWaitingAlertMode(): CallWaitingAlertMode {
-        // Fields: DialerSettings.callWaitingAlertMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDisableCustomInCallUi(): Boolean {
-        // Fields: DialerSettings.disableCustomInCallUi
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getEnableDialpadTones(): Boolean {
-        // Fields: DialerSettings.enableDialpadTones
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getEnableDuplicateMergeSuggestions(): Boolean {
-        // Fields: DialerSettings.enableDuplicateMergeSuggestions
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getEnableProximitySensor(): Boolean {
-        // Fields: DialerSettings.enableProximitySensor
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getEnableRootEnhancements(): Boolean {
-        // Fields: DialerSettings.enableRootEnhancements
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getEnableShizukuEnhancements(): Boolean {
-        // Fields: DialerSettings.enableShizukuEnhancements
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getFloatingWindowAlpha(): Float {
-        // Fields: DialerSettings.floatingWindowAlpha
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getFloatingWindowHeightScale(): Float {
-        // Fields: DialerSettings.floatingWindowHeightScale
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getFloatingWindowWidthDp(): Int {
-        // Fields: DialerSettings.floatingWindowWidthDp
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getIgnoreDefaultSim(): Boolean {
-        // Fields: DialerSettings.ignoreDefaultSim
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getIncomingVibrationPattern(): IncomingVibrationPattern {
-        // Fields: DialerSettings.incomingVibrationPattern
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getIncomingWindowMode(): CallWindowPreference {
-        // Fields: DialerSettings.incomingWindowMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getProximityMode(): ProximityMode {
-        // Fields: DialerSettings.proximityMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getRecordingCustomTreeUri(): String {
-        // Fields: DialerSettings.recordingCustomTreeUri
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getRecordingEngine(): RecordingEngine {
-        // Fields: DialerSettings.recordingEngine
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getRecordingMode(): RecordingMode {
-        // Fields: DialerSettings.recordingMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getRecordingSaveLocation(): RecordingSaveLocation {
-        // Fields: DialerSettings.recordingSaveLocation
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getShowBlockedWarningOnCallUi(): Boolean {
-        // Fields: DialerSettings.showBlockedWarningOnCallUi
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getShowRecordingsInCallDetails(): Boolean {
-        // Fields: DialerSettings.showRecordingsInCallDetails
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getThemeMode(): ThemeMode {
-        // Fields: DialerSettings.themeMode
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getUseAmoledPureBlack(): Boolean {
-        // Fields: DialerSettings.useAmoledPureBlack
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getUseDynamicColor(): Boolean {
-        // Fields: DialerSettings.useDynamicColor
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getVibrateOnAnswer(): Boolean {
-        // Fields: DialerSettings.vibrateOnAnswer
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getWaitingWindowHeightScale(): Float {
-        // Fields: DialerSettings.waitingWindowHeightScale
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getWaitingWindowWidthDp(): Int {
-        // Fields: DialerSettings.waitingWindowWidthDp
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun hashCode(): Int {
-        // Fields: DialerSettings.themeMode, DialerSettings.useAmoledPureBlack, DialerSettings.useDynamicColor, DialerSettings.callMergeMode, DialerSettings.incomingWindowMode, DialerSettings.disableCustomInCallUi, DialerSettings.recordingMode, DialerSettings.recordingEngine, DialerSettings.recordingSaveLocation, DialerSettings.recordingCustomTreeUri, DialerSettings.showRecordingsInCallDetails, DialerSettings.blockUnknownNumbers
-        // -> ThemeMode.hashCode()
-        // -> Boolean.hashCode()
-        // -> CallMergeMode.hashCode()
-        // -> CallWindowPreference.hashCode()
-        // -> RecordingMode.hashCode()
-        // -> RecordingEngine.hashCode()
-        // -> RecordingSaveLocation.hashCode()
-        // -> String.hashCode()
-        // -> Object.hashCode()
-        // -> ProximityMode.hashCode()
-        // -> IncomingVibrationPattern.hashCode()
-        // -> CallWaitingAlertMode.hashCode()
-        // -> Float.hashCode()
-        // -> Integer.hashCode()
-        TODO("Decoded 163 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun toString(): String {
-        // Strings: "DialerSettings(themeMode=", ", useAmoledPureBlack=", ", useDynamicColor=", ", callMergeMode=", ", incomingWindowMode=", ", disableCustomInCallUi=", ", recordingMode=", ", recordingEngine=", ", recordingSaveLocation=", ", recordingCustomTreeUri=", ", showRecordingsInCallDetails=", ", blockUnknownNumbers=", ", blockForeignNumbers=", ", blockUnsavedNumbers=", ", blockedPrefixes=", ", enableRootEnhancements="
-        // Fields: DialerSettings.themeMode, DialerSettings.useAmoledPureBlack, DialerSettings.useDynamicColor, DialerSettings.callMergeMode, DialerSettings.incomingWindowMode, DialerSettings.disableCustomInCallUi, DialerSettings.recordingMode, DialerSettings.recordingEngine, DialerSettings.recordingSaveLocation, DialerSettings.recordingCustomTreeUri, DialerSettings.showRecordingsInCallDetails, DialerSettings.blockUnknownNumbers
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 237 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }

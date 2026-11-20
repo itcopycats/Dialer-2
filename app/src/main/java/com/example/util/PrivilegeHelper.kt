@@ -1,337 +1,190 @@
-// Reconstructed from APK DEX metadata & bytecode (PrivilegeHelper.kt)
 package com.example.util
 
+import android.app.role.RoleManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import android.telecom.TelecomManager
+import androidx.core.content.ContextCompat
 import com.example.model.PrivilegeDiagnostics
-import java.util.List
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 object PrivilegeHelper {
-    companion object {
-        val PERMISSION_CAPTURE_AUDIO: String = "android.permission.CAPTURE_AUDIO_OUTPUT"
-        val SHIZUKU_PACKAGE: String = "moe.shizuku.privileged.api"
+    private const val SHIZUKU_PACKAGE = "moe.shizuku.privileged.api"
+
+    fun isDefaultDialer(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = context.getSystemService(RoleManager::class.java)
+            rm?.isRoleHeld(RoleManager.ROLE_DIALER) == true
+        } else {
+            val tm = context.getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
+            tm?.defaultDialerPackage == context.packageName
+        }
     }
 
-    private constructor() {
-        // -> Object.<init>()
+    fun isCallScreeningHold(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = context.getSystemService(RoleManager::class.java)
+            rm?.isRoleHeld(RoleManager.ROLE_CALL_SCREENING) == true
+        } else {
+            isDefaultDialer(context)
+        }
     }
 
-    fun deleteSimContactElevated$default(p0: PrivilegeHelper, p1: Context, p2: String, p3: String, p4: String, p5: Int, p6: Any): PrivilegeHelper$CommandResult {
-        // Strings: "content://icc/adn"
-        // -> PrivilegeHelper.deleteSimContactElevated()
-        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
+    fun createDefaultDialerRequestIntent(context: Context): Intent? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = context.getSystemService(RoleManager::class.java)
+            if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_DIALER)) {
+                return rm.createRequestRoleIntent(RoleManager.ROLE_DIALER)
+            }
+        }
+        return Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
+            putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, context.packageName)
+        }
     }
 
-    fun runPrivilegedCommand$default(p0: PrivilegeHelper, p1: Context, p2: String, p3: Boolean, p4: Boolean, p5: Int, p6: Any): PrivilegeHelper$CommandResult {
-        // -> PrivilegeHelper.runPrivilegedCommand()
-        TODO("Decoded 10 Dalvik instructions; see decompiled_bytecode/")
+    fun createCallScreeningRequestIntent(context: Context): Intent? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = context.getSystemService(RoleManager::class.java)
+            if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING)) {
+                return rm.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
+            }
+        }
+        return createDefaultDialerRequestIntent(context)
     }
 
-    private fun runViaShizukuBinder(command: String): PrivilegeHelper$CommandResult {
-        // Strings: "obtain(...)", "SHIZUKU", "android.os.ServiceManager", "getService", "shizuku", "Shizuku binder not found", "moe.shizuku.server.IShizukuService", "sh", "-c", "Shizuku transaction declined (authorize app in Shizuku Manager)", "Executed via Shizuku", "Shizuku invocation failed"
-        // -> Class.forName()
-        // -> Class.getMethod()
-        // -> Method.invoke()
-        // -> PrivilegeHelper$CommandResult.<init>()
-        // -> Parcel.obtain()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> Parcel.writeInterfaceToken()
-        // -> Parcel.writeStringArray()
-        // -> Parcel.writeString()
-        // -> IBinder.transact()
-        // -> Parcel.recycle()
-        // -> Parcel.readException()
-        // -> Exception.getMessage()
-        TODO("Decoded 80 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun applyVoiceChangerRootRouting(context: Context, enable: Boolean): PrivilegeHelper$CommandResult {
-        // Strings: "context", "1", "0", "true", "false", "appops set ", " RECORD_AUDIO allow 2>/dev/null; ", " MODIFY_AUDIO_ROUTING allow 2>/dev/null; ", "setprop vendor.audio.incall.music ", " 2>/dev/null; ", "setprop persist.vendor.audio.voice_changer ", "tinymix 'Incall_Music Audio Mixer MultiMedia2' ", "tinymix 'INCALL_MUSIC_UPLINK' ", "tinymix 'Voice Tx Mute' ", " 2>/dev/null || true"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getPackageName()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> PrivilegeHelper.runRootCommand()
-        TODO("Decoded 109 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun checkRootAccess(): Pair {
-        // Strings: "su", "-c", "id", "Timeout waiting for su", "uid=0", "uid=0(root)", "Denied", "su present (not granted)", "Not rooted"
-        // Fields: TimeUnit.MILLISECONDS
-        // -> ProcessBuilder.<init>()
-        // -> ProcessBuilder.redirectErrorStream()
-        // -> ProcessBuilder.start()
-        // -> Process.waitFor()
-        // -> Process.destroyForcibly()
-        // -> Boolean.valueOf()
-        // -> TuplesKt.to()
-        // -> Process.getInputStream()
-        // -> InputStreamReader.<init>()
-        // -> BufferedReader.<init>()
-        // -> TextStreamsKt.readText()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> CloseableKt.closeFinally()
-        // -> Process.exitValue()
-        // -> StringsKt.contains$default()
-        // -> StringsKt.isBlank()
-        // -> PrivilegeHelper.isRootBinaryPresent()
-        TODO("Decoded 97 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun deleteSimContactElevated(context: Context, name: String, number: String, uriString: String): PrivilegeHelper$CommandResult {
-        // Strings: "context", "name", "number", "uriString", "'", "' AND number='", "tag='", "number='", "content delete --uri ", " --where \"", "\" || content delete --uri ", " --where \"name='", "'\" || content delete --uri ", " --where \"number='", "'\""
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.replace$default()
-        // -> StringsKt.isBlank()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> PrivilegeHelper.runPrivilegedCommand$default()
-        TODO("Decoded 112 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun deleteSystemBlockedNumber(context: Context, number: String): PrivilegeHelper$CommandResult {
-        // Strings: "context", "number", "'", "content delete --uri content://com.android.blockednumber/blocked --where \"origi", "'\""
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.replace$default()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> PrivilegeHelper.runPrivilegedCommand$default()
-        TODO("Decoded 33 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDiagnostics(context: Context): PrivilegeDiagnostics {
-        // Strings: "context"
-        // Fields: PermissionHelper.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PrivilegeHelper.checkRootAccess()
-        // -> Pair.component1()
-        // -> Boolean.booleanValue()
-        // -> Pair.component2()
-        // -> PrivilegeHelper.isShizukuInstalled()
-        // -> PrivilegeHelper.isShizukuServiceRunning()
-        // -> PrivilegeHelper.hasCaptureAudioOutputPermission()
-        // -> PermissionHelper.isDefaultDialer()
-        // -> PermissionHelper.hasOverlayPermission()
-        // -> PrivilegeDiagnostics.<init>()
-        TODO("Decoded 32 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun grantTwoWayRecordingPrivilege(context: Context): PrivilegeHelper$CommandResult {
-        // Strings: "context", "pm grant ", " android.permission.CAPTURE_AUDIO_OUTPUT 2>/dev/null; appops set ", " RECORD_AUDIO allow 2>/dev/null; appops set ", " PROJECT_MEDIA allow 2>/dev/null"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getPackageName()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> PrivilegeHelper.runPrivilegedCommand$default()
-        TODO("Decoded 38 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun hasCaptureAudioOutputPermission(context: Context): Boolean {
-        // Strings: "context", "android.permission.CAPTURE_AUDIO_OUTPUT"
-        // Fields: PermissionHelper.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PermissionHelper.hasPermission()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun insertSimContactElevated(context: Context, name: String, number: String, subId: Int): PrivilegeHelper$CommandResult {
-        // Strings: "context", "name", "number", "'", "content://icc/adn/subId/", "content://icc/adn", "content insert --uri ", " --bind tag:s:'", "' --bind number:s:'"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.replace$default()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> PrivilegeHelper.runPrivilegedCommand$default()
-        TODO("Decoded 65 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun insertSystemBlockedNumber(context: Context, number: String): PrivilegeHelper$CommandResult {
-        // Strings: "context", "number", "'", "content insert --uri content://com.android.blockednumber/blocked --bind original"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.replace$default()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> PrivilegeHelper.runPrivilegedCommand$default()
-        TODO("Decoded 33 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun isRootBinaryPresent(): Boolean {
-        // Strings: "/system/bin/su", "/system/xbin/su", "/sbin/su", "/su/bin/su", "/vendor/bin/su", "/data/local/xbin/su", "/data/local/bin/su"
-        // -> CollectionsKt.listOf()
-        // -> Collection.isEmpty()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> File.<init>()
-        // -> File.exists()
-        TODO("Decoded 61 Dalvik instructions; see decompiled_bytecode/")
+    fun canDrawOverlays(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(context)
+        } else {
+            true
+        }
     }
 
     fun isShizukuInstalled(context: Context): Boolean {
-        // Strings: "context", "moe.shizuku.privileged.api"
-        // Fields: Build$VERSION.SDK_INT
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getPackageManager()
-        // -> PackageManager$PackageInfoFlags.of()
-        // -> PackageManager.getPackageInfo()
-        TODO("Decoded 23 Dalvik instructions; see decompiled_bytecode/")
+        return runCatching {
+            context.packageManager.getPackageInfo(SHIZUKU_PACKAGE, 0)
+            true
+        }.getOrDefault(false)
     }
 
-    fun isShizukuServiceRunning(context: Context): Boolean {
-        // Strings: "context", "android.os.ServiceManager", "getService", "shizuku", "moe.shizuku.privileged.api.shizuku"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PrivilegeHelper.isShizukuInstalled()
-        // -> Class.forName()
-        // -> Class.getMethod()
-        // -> Method.invoke()
-        // -> IBinder.pingBinder()
-        // -> Context.getContentResolver()
-        // -> ContentResolver.acquireContentProviderClient()
-        // -> ContentProviderClient.close()
-        TODO("Decoded 48 Dalvik instructions; see decompiled_bytecode/")
+    fun hasCaptureAudioOutputPermission(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            "android.permission.CAPTURE_AUDIO_OUTPUT"
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun querySystemBlockedNumbers(context: Context): List<*> {
-        // Strings: "context", "content query --uri content://com.android.blockednumber/blocked --projection ori", "original_number=([^,\n]+)", "NULL"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PrivilegeHelper.runPrivilegedCommand$default()
-        // -> PrivilegeHelper$CommandResult.getSuccess()
-        // -> ArrayList.<init>()
-        // -> Regex.<init>()
-        // -> PrivilegeHelper$CommandResult.getOutput()
-        // -> StringsKt.lineSequence()
-        // -> Sequence.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> Regex.find$default()
-        // -> MatchResult.getGroupValues()
-        // -> CollectionsKt.getOrNull()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> StringsKt.isBlank()
-        // -> Intrinsics.areEqual()
-        // -> List.add()
-        TODO("Decoded 78 Dalvik instructions; see decompiled_bytecode/")
+    fun checkRootAccess(): Pair<Boolean, String> {
+        val paths = listOf(
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/sbin/su",
+            "/data/local/xbin/su",
+            "/data/local/bin/su",
+            "/system/sd/xbin/su"
+        )
+        val binaryFound = paths.any { File(it).exists() }
+        return try {
+            val process = ProcessBuilder("su", "-c", "id").redirectErrorStream(true).start()
+            val output = process.inputStream.bufferedReader().readText().trim()
+            val exitCode = process.waitFor()
+            if (exitCode == 0 && output.contains("uid=0")) {
+                true to "Root Granted ($output)"
+            } else if (binaryFound) {
+                false to "su binary found (Grant prompt denied or Magisk not authorized)"
+            } else {
+                false to "No su binary detected"
+            }
+        } catch (e: Exception) {
+            if (binaryFound) {
+                false to "su binary present (${e.message ?: "execution blocked"})"
+            } else {
+                false to "Unrooted standard Android"
+            }
+        }
     }
 
-    fun runPrivilegedCommand(context: Context, command: String, allowRoot: Boolean, allowShizuku: Boolean): PrivilegeHelper$CommandResult {
-        // Strings: "context", "command", "Root or authorized Shizuku service not active", "NONE"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PrivilegeHelper.checkRootAccess()
-        // -> Pair.component1()
-        // -> Boolean.booleanValue()
-        // -> PrivilegeHelper.runRootCommand()
-        // -> PrivilegeHelper.isShizukuServiceRunning()
-        // -> PrivilegeHelper.runViaShizukuBinder()
-        // -> PrivilegeHelper$CommandResult.getSuccess()
-        // -> PrivilegeHelper$CommandResult.<init>()
-        TODO("Decoded 32 Dalvik instructions; see decompiled_bytecode/")
+    suspend fun grantPermissionsWithRoot(context: Context): Pair<Boolean, String> =
+        withContext(Dispatchers.IO) {
+            val pkg = context.packageName
+            val commands = listOf(
+                "pm grant $pkg android.permission.READ_CALL_LOG",
+                "pm grant $pkg android.permission.WRITE_CALL_LOG",
+                "pm grant $pkg android.permission.READ_CONTACTS",
+                "pm grant $pkg android.permission.WRITE_CONTACTS",
+                "pm grant $pkg android.permission.CALL_PHONE",
+                "pm grant $pkg android.permission.READ_PHONE_STATE",
+                "pm grant $pkg android.permission.ANSWER_PHONE_CALLS",
+                "pm grant $pkg android.permission.RECORD_AUDIO",
+                "pm grant $pkg android.permission.CAPTURE_AUDIO_OUTPUT",
+                "appops set $pkg READ_CALL_LOG allow",
+                "appops set $pkg WRITE_CALL_LOG allow",
+                "appops set $pkg SYSTEM_ALERT_WINDOW allow",
+                "appops set $pkg RECORD_AUDIO allow",
+                "cmd role add-role-holder android.app.role.DIALER $pkg",
+                "cmd role add-role-holder android.app.role.CALL_SCREENING $pkg"
+            )
+            runCatching {
+                val joined = commands.joinToString("; ")
+                val proc = ProcessBuilder("su", "-c", joined).redirectErrorStream(true).start()
+                val out = proc.inputStream.bufferedReader().readText().trim()
+                val code = proc.waitFor()
+                if (code == 0) {
+                    true to "Root privileges & Dialer roles granted"
+                } else {
+                    false to "Root command exited ($code): ${out.ifBlank { "check su manager" }}"
+                }
+            }.getOrElse { e ->
+                false to "Root execution failed: ${e.message}"
+            }
+        }
+
+    fun ensureWriteCallLogWithRoot(context: Context): Boolean {
+        val pkg = context.packageName
+        val cmd = listOf(
+            "pm grant $pkg android.permission.READ_CALL_LOG",
+            "pm grant $pkg android.permission.WRITE_CALL_LOG",
+            "appops set $pkg READ_CALL_LOG allow",
+            "appops set $pkg WRITE_CALL_LOG allow"
+        ).joinToString("; ")
+        return runCatching {
+            val proc = ProcessBuilder("su", "-c", cmd).redirectErrorStream(true).start()
+            proc.waitFor() == 0
+        }.getOrDefault(false)
     }
 
-    fun runRootCommand(command: String): PrivilegeHelper$CommandResult {
-        // Strings: "ROOT", "command", "su", "-c", "Command timed out", "Root unavailable"
-        // Fields: TimeUnit.MILLISECONDS
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ProcessBuilder.<init>()
-        // -> ProcessBuilder.redirectErrorStream()
-        // -> ProcessBuilder.start()
-        // -> Process.waitFor()
-        // -> Process.destroyForcibly()
-        // -> PrivilegeHelper$CommandResult.<init>()
-        // -> Process.getInputStream()
-        // -> InputStreamReader.<init>()
-        // -> BufferedReader.<init>()
-        // -> TextStreamsKt.readText()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> CloseableKt.closeFinally()
-        // -> Process.exitValue()
-        // -> Exception.getMessage()
-        TODO("Decoded 73 Dalvik instructions; see decompiled_bytecode/")
+    fun inspectFast(context: Context): PrivilegeDiagnostics {
+        val shizukuInstalled = isShizukuInstalled(context)
+        return PrivilegeDiagnostics(
+            isDefaultDialer = isDefaultDialer(context),
+            isCallScreeningApp = isCallScreeningHold(context),
+            canDrawOverlays = canDrawOverlays(context),
+            isRootAvailable = false,
+            rootStatusDetail = "Checking root...",
+            isShizukuInstalled = shizukuInstalled,
+            isShizukuRunning = shizukuInstalled,
+            hasCaptureAudioOutputPermission = hasCaptureAudioOutputPermission(context)
+        )
     }
 
-}
-
-class PrivilegeHelper$CommandResult {
-    val method: String
-    val output: String
-    val success: Boolean
-
-    constructor(success: Boolean, output: String, method: String) {
-        // Strings: "output", "method"
-        // Fields: PrivilegeHelper$CommandResult.success, PrivilegeHelper$CommandResult.output, PrivilegeHelper$CommandResult.method
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Object.<init>()
-    }
-
-    fun copy$default(p0: PrivilegeHelper$CommandResult, p1: Boolean, p2: String, p3: String, p4: Int, p5: Any): PrivilegeHelper$CommandResult {
-        // Fields: PrivilegeHelper$CommandResult.success, PrivilegeHelper$CommandResult.output, PrivilegeHelper$CommandResult.method
-        // -> PrivilegeHelper$CommandResult.copy()
-        TODO("Decoded 12 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component1(): Boolean {
-        // Fields: PrivilegeHelper$CommandResult.success
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component2(): String {
-        // Fields: PrivilegeHelper$CommandResult.output
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component3(): String {
-        // Fields: PrivilegeHelper$CommandResult.method
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun copy(p0: Boolean, p1: String, p2: String): PrivilegeHelper$CommandResult {
-        // Strings: "output", "method"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PrivilegeHelper$CommandResult.<init>()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun equals(p0: Any): Boolean {
-        // Fields: PrivilegeHelper$CommandResult.success, PrivilegeHelper$CommandResult.output, PrivilegeHelper$CommandResult.method
-        // -> Intrinsics.areEqual()
-        TODO("Decoded 26 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getMethod(): String {
-        // Fields: PrivilegeHelper$CommandResult.method
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getOutput(): String {
-        // Fields: PrivilegeHelper$CommandResult.output
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSuccess(): Boolean {
-        // Fields: PrivilegeHelper$CommandResult.success
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun hashCode(): Int {
-        // Fields: PrivilegeHelper$CommandResult.success, PrivilegeHelper$CommandResult.output, PrivilegeHelper$CommandResult.method
-        // -> Boolean.hashCode()
-        // -> String.hashCode()
-        TODO("Decoded 14 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun toString(): String {
-        // Strings: "CommandResult(success=", ", output=", ", method=", ")"
-        // Fields: PrivilegeHelper$CommandResult.success, PrivilegeHelper$CommandResult.output, PrivilegeHelper$CommandResult.method
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 26 Dalvik instructions; see decompiled_bytecode/")
-    }
-
+    suspend fun inspectPrivileges(context: Context): PrivilegeDiagnostics =
+        withContext(Dispatchers.IO) {
+            val rootResult = checkRootAccess()
+            val shizukuInstalled = isShizukuInstalled(context)
+            PrivilegeDiagnostics(
+                isDefaultDialer = isDefaultDialer(context),
+                isCallScreeningApp = isCallScreeningHold(context),
+                canDrawOverlays = canDrawOverlays(context),
+                isRootAvailable = rootResult.first,
+                rootStatusDetail = rootResult.second,
+                isShizukuInstalled = shizukuInstalled,
+                isShizukuRunning = shizukuInstalled,
+                hasCaptureAudioOutputPermission = hasCaptureAudioOutputPermission(context)
+            )
+        }
 }

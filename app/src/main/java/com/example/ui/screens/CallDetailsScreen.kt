@@ -1,1294 +1,743 @@
-// Reconstructed from APK DEX metadata & bytecode (CallDetailsScreen.kt)
 package com.example.ui.screens
 
-import android.content.Context
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.runtime.Composer
-import androidx.compose.runtime.DisposableEffectResult
-import androidx.compose.runtime.DisposableEffectScope
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.model.CallDirection
 import com.example.model.CallLogEntry
+import com.example.model.MergedCallGroup
 import com.example.model.RecordingEntry
-import java.util.List
-import java.util.Map
-import java.util.Set
-import kotlinx.coroutines.CoroutineScope
+import com.example.ui.components.CallDirectionIcon
+import com.example.ui.components.ContactAvatarCircle
+import com.example.ui.components.OemSimChip
+import com.example.ui.components.VoLteBoxBadge
+import com.example.ui.theme.DialerBlockedRed
+import com.example.ui.theme.DialerBlue
+import com.example.ui.theme.DialerCrimson
+import com.example.ui.theme.DialerEmerald
+import com.example.util.AppToast
+import com.example.util.CallRecorderManager
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class CallDetailsScreenKt {
-    @Composable
-    fun CallDetailsScreen(displayTitle: String, phoneNumber: String, photoUri: String, isBlocked: Boolean, isSavedContact: Boolean, allCallsForContact: List<*>, recordings: List<*>, showRecordingsInDetails: Boolean, currentlyPlayingPath: String, pendingUndoEntry: CallLogEntry, onBack: Function0, onAudioCall: Function0, onVideoCall: Function0, onMessage: Function0, onSaveContact: Function0, onToggleBlock: Function0, onDeleteAllForContact: Function0, onDeleteSelectedEntries: Function1, onSwipeDeleteEntry: Function1, onUndoDeleteEntry: Function0, onCommitPendingUndo: Function0, onTogglePlayRecording: Function1, $changed: Int) {
-        // Strings: "displayTitle", "phoneNumber", "allCallsForContact", "recordings", "onBack", "onAudioCall", "onVideoCall", "onMessage", "onSaveContact", "onToggleBlock", "onDeleteAllForContact", "onDeleteSelectedEntries", "onSwipeDeleteEntry", "onUndoDeleteEntry", "onCommitPendingUndo", "onTogglePlayRecording"
-        // Fields: Composer.Companion, Unit.INSTANCE, CallRecorderManager.INSTANCE, Modifier.Companion, Alignment.Companion, ComposeUiNode.Companion, BoxScopeInstance.INSTANCE, Arrangement.INSTANCE, ComposableSingletons$CallDetailsScreenKt.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.changedInstance()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> AndroidCompositionLocals_androidKt.getLocalContext()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.consume()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> CompositionLocalsKt.getLocalClipboardManager()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> Boolean.valueOf()
-        // -> SnapshotStateKt.mutableStateOf$default()
-        // -> Composer.updateRememberedValue()
-        // -> SetsKt.emptySet()
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun CallDetailsScreen(
+    group: MergedCallGroup,
+    allCallsForContact: List<CallLogEntry>,
+    recordings: List<RecordingEntry>,
+    currentlyPlayingPath: String,
+    showCallRecordingInDetails: Boolean,
+    isBlocked: Boolean,
+    glassTintAlpha: Float,
+    isVideoCallAvailable: Boolean = true,
+    videoUnavailableReason: String = "",
+    onAudioCall: () -> Unit,
+    onVideoCall: () -> Unit,
+    onMessage: () -> Unit,
+    onSaveToContacts: () -> Unit,
+    onToggleBlock: () -> Unit,
+    onDeleteSelectedEntries: (Collection<Long>) -> Unit,
+    onSwipeDeleteEntry: (CallLogEntry) -> Unit = { onDeleteSelectedEntries(listOf(it.id)) },
+    onUndoLastDelete: () -> Unit = {},
+    onDeleteAllHistoryForContact: () -> Unit,
+    onTogglePlayRecording: (RecordingEntry) -> Unit
+) {
+    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    val dark = isSystemInDarkTheme()
+    val primary = group.primaryEntry
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    var isSelectionMode by remember { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var swipeResetCounter by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(allCallsForContact) {
+        val validIds = allCallsForContact.map { it.id }.toSet()
+        selectedIds = selectedIds.intersect(validIds)
+        if (allCallsForContact.isEmpty()) {
+            isSelectionMode = false
+        }
     }
 
-    private fun CallDetailsScreen$lambda$1($isSelectionMode$delegate: MutableState): Boolean {
-        // -> State.getValue()
-        // -> Boolean.booleanValue()
-        TODO("Decoded 11 Dalvik instructions; see decompiled_bytecode/")
+    val dateFmt = remember { SimpleDateFormat("MMM d, hh:mm a", Locale.getDefault()) }
+    val matchedRecordingsByCallId = remember(allCallsForContact, recordings, showCallRecordingInDetails) {
+        if (!showCallRecordingInDetails) {
+            emptyMap()
+        } else {
+            CallRecorderManager.matchRecordingsToCalls(allCallsForContact, recordings)
+        }
     }
 
-    private fun CallDetailsScreen$lambda$10($confirmDeleteAll$delegate: MutableState): Boolean {
-        // -> State.getValue()
-        // -> Boolean.booleanValue()
-        TODO("Decoded 11 Dalvik instructions; see decompiled_bytecode/")
-    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("call_details_screen"),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 76.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+        // Top Caller Summary Card
+        item {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ContactAvatarCircle(
+                        title = primary.displayTitle,
+                        size = 72.dp,
+                        isBlocked = isBlocked,
+                        photoUri = primary.photoUri,
+                        useSilhouetteFallback = true
+                    )
 
-    private fun CallDetailsScreen$lambda$11($confirmDeleteAll$delegate: MutableState, <set-?>: Boolean) {
-        // -> Boolean.valueOf()
-        // -> MutableState.setValue()
-    }
+                    Text(
+                        text = primary.displayTitle,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-    private fun CallDetailsScreen$lambda$13($swipeResetCounter$delegate: MutableIntState): Int {
-        // -> IntState.getIntValue()
-        TODO("Decoded 8 Dalvik instructions; see decompiled_bytecode/")
-    }
+                    if (primary.number.isNotBlank()) {
+                        Text(
+                            text = primary.number,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    clipboard.setText(AnnotatedString(primary.number))
+                                    AppToast.show(context, "Copied ${primary.number}")
+                                }
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
 
-    private fun CallDetailsScreen$lambda$14($swipeResetCounter$delegate: MutableIntState, <set-?>: Int) {
-        // -> MutableIntState.setIntValue()
-    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        PastelActionCircleButton(
+                            icon = Icons.Default.Call,
+                            label = "Call",
+                            circleColor = if (dark) Color(0xFF133824) else Color(0xFFDDF6E7),
+                            iconTint = DialerEmerald,
+                            onClick = onAudioCall,
+                            modifier = Modifier.testTag("details_call_btn")
+                        )
+                        PastelActionCircleButton(
+                            icon = Icons.Default.Videocam,
+                            label = "Video",
+                            circleColor = if (isVideoCallAvailable) {
+                                if (dark) Color(0xFF152946) else Color(0xFFDEE8FF)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+                            },
+                            iconTint = if (isVideoCallAvailable) {
+                                DialerBlue
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            isDimmed = !isVideoCallAvailable,
+                            onClick = {
+                                if (isVideoCallAvailable) {
+                                    onVideoCall()
+                                } else {
+                                    val reason = videoUnavailableReason.ifBlank {
+                                        "Carrier or device does not support video calling"
+                                    }
+                                    AppToast.show(context, "Video call unavailable: $reason")
+                                }
+                            },
+                            modifier = Modifier.testTag("details_video_btn")
+                        )
+                        PastelActionCircleButton(
+                            icon = Icons.AutoMirrored.Filled.Message,
+                            label = "Message",
+                            circleColor = if (dark) Color(0xFF232B38) else Color(0xFFE6EDF2),
+                            iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            onClick = onMessage,
+                            modifier = Modifier.testTag("details_message_btn")
+                        )
+                        PastelActionCircleButton(
+                            icon = Icons.Default.Block,
+                            label = if (isBlocked) "Unblock" else "Block",
+                            circleColor = if (isBlocked) {
+                                DialerCrimson
+                            } else if (dark) {
+                                Color(0xFF3E1822)
+                            } else {
+                                Color(0xFFFCE2E6)
+                            },
+                            iconTint = if (isBlocked) Color.White else DialerCrimson,
+                            onClick = onToggleBlock,
+                            modifier = Modifier.testTag("details_block_btn")
+                        )
+                    }
 
-    fun CallDetailsScreen$lambda$18$lambda$17($onCommitPendingUndo: Function0, $this$DisposableEffect: DisposableEffectScope): DisposableEffectResult {
-        // Strings: "$this$DisposableEffect"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> CallDetailsScreenKt$CallDetailsScreen$lambda$18$lambda$17$$inlined$onDispose$1.<init>()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
+                    if (primary.cachedName.isBlank() && primary.number.isNotBlank()) {
+                        OutlinedButton(
+                            onClick = onSaveToContacts,
+                            shape = RoundedCornerShape(18.dp),
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PersonAdd,
+                                contentDescription = null,
+                                tint = DialerEmerald,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Save to Contacts", color = DialerEmerald, fontSize = 13.sp)
+                        }
+                    }
+                }
+            }
+        }
 
-    private fun CallDetailsScreen$lambda$2($isSelectionMode$delegate: MutableState, <set-?>: Boolean) {
-        // -> Boolean.valueOf()
-        // -> MutableState.setValue()
-    }
+        // Multi-selection toolbar when active
+        if (isSelectionMode) {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = {
+                                    isSelectionMode = false
+                                    selectedIds = emptySet()
+                                }
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = "Exit Selection")
+                            }
+                            Text(
+                                text = "${selectedIds.size} selected",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                        Row {
+                            IconButton(
+                                onClick = {
+                                    selectedIds = if (selectedIds.size == allCallsForContact.size) {
+                                        emptySet()
+                                    } else {
+                                        allCallsForContact.map { it.id }.toSet()
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SelectAll,
+                                    contentDescription = "Select All",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (selectedIds.isNotEmpty()) {
+                                        onDeleteSelectedEntries(selectedIds)
+                                        selectedIds = emptySet()
+                                        isSelectionMode = false
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Selected",
+                                    tint = DialerCrimson
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-    fun CallDetailsScreen$lambda$20$lambda$19($onCommitPendingUndo: Function0, $onBack: Function0, $isSelectionMode$delegate: MutableState, $selectedIds$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$1()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$2()
-        // -> SetsKt.emptySet()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$5()
-        // -> Function0.invoke()
-    }
+        // Section Header
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "All Calls (${allCallsForContact.size})",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = "Hold to mark • Swipe to delete",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
-    private fun CallDetailsScreen$lambda$4($selectedIds$delegate: MutableState): Set<*> {
-        // -> State.getValue()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
+        if (allCallsForContact.isEmpty()) {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(34.dp)
+                        )
+                        Text(
+                            text = "No call history",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+        } else {
+            items(allCallsForContact, key = { "${it.id}_$swipeResetCounter" }) { entry ->
+                val isSelected = selectedIds.contains(entry.id)
+                val matchedRecordings = matchedRecordingsByCallId[entry.id].orEmpty()
 
-    private fun CallDetailsScreen$lambda$5($selectedIds$delegate: MutableState, <set-?>: Set<*>) {
-        // -> MutableState.setValue()
-    }
+                val dismissState = rememberSwipeToDismissBoxState(
+                    confirmValueChange = { value ->
+                        if (isSelectionMode) return@rememberSwipeToDismissBoxState false
+                        when (value) {
+                            SwipeToDismissBoxValue.StartToEnd -> {
+                                onMessage()
+                                swipeResetCounter++
+                                false
+                            }
+                            SwipeToDismissBoxValue.EndToStart -> {
+                                onSwipeDeleteEntry(entry)
+                                swipeResetCounter++
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    val res = snackbarHostState.showSnackbar(
+                                        message = "Deleted",
+                                        actionLabel = "UNDO",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (res == SnackbarResult.ActionPerformed) {
+                                        onUndoLastDelete()
+                                    }
+                                }
+                                true
+                            }
+                            SwipeToDismissBoxValue.Settled -> false
+                        }
+                    },
+                    positionalThreshold = { totalDistance -> totalDistance * 0.48f }
+                )
 
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55($allCallsForContact: List<*>, $isSelectionMode$delegate: MutableState, $selectedIds$delegate: MutableState, $confirmDeleteSelected$delegate: MutableState, $onCommitPendingUndo: Function0, $onBack: Function0, $confirmDeleteAll$delegate: MutableState, $displayTitle: String, $photoUri: String, $phoneNumber: String, $clipboard: ClipboardManager, $context: Context, $onAudioCall: Function0, $onVideoCall: Function0, $onMessage: Function0, $isSavedContact: Boolean, $onSaveContact: Function0, $isBlocked: Boolean, $onToggleBlock: Function0, $recordingsByCallId: Map<*, *>, $onSwipeDeleteEntry: Function1, $swipeResetCounter$delegate: MutableIntState, $currentlyPlayingPath: String, $onTogglePlayRecording: Function1, $this$LazyColumn: LazyListScope) {
-        // Strings: "$this$LazyColumn"
-        // Fields: ComposableSingletons$CallDetailsScreenKt.INSTANCE, CallDetailsScreenKt$CallDetailsScreen$lambda$64$lambda$56$lambda$55$$inlined$items$default$1.INSTANCE, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda0.<init>()
-        // -> ComposableLambdaKt.composableLambdaInstance()
-        // -> LazyListScope.item$default()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda11.<init>()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda22.<init>()
-        // -> List.isEmpty()
-        // -> ComposableSingletons$CallDetailsScreenKt.getLambda$-1928905874$app()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda29.<init>()
-        // -> List.size()
-        // -> CallDetailsScreenKt$CallDetailsScreen$lambda$64$lambda$56$lambda$55$$inlined$items$default$2.<init>()
-        // -> CallDetailsScreenKt$CallDetailsScreen$lambda$64$lambda$56$lambda$55$$inlined$items$default$3.<init>()
-        // -> CallDetailsScreenKt$CallDetailsScreen$lambda$64$lambda$56$lambda$55$$inlined$items$default$4.<init>()
-        // -> LazyListScope.items()
-    }
+                SwipeToDismissBox(
+                    state = dismissState,
+                    backgroundContent = {
+                        val dir = dismissState.dismissDirection
+                        if (dir == SwipeToDismissBoxValue.StartToEnd) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(DialerEmerald)
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Message,
+                                    contentDescription = "Send Message",
+                                    tint = Color.White
+                                )
+                            }
+                        } else if (dir == SwipeToDismissBoxValue.EndToStart) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(DialerCrimson)
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Call Log",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .combinedClickable(
+                                onClick = {
+                                    if (isSelectionMode) {
+                                        selectedIds = if (isSelected) {
+                                            selectedIds - entry.id
+                                        } else {
+                                            selectedIds + entry.id
+                                        }
+                                    }
+                                },
+                                onLongClick = {
+                                    isSelectionMode = true
+                                    selectedIds = selectedIds + entry.id
+                                }
+                            )
+                            .testTag("call_detail_entry_${entry.id}"),
+                        shape = RoundedCornerShape(18.dp),
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            if (isSelectionMode) {
+                                Checkbox(
+                                    checked = isSelected,
+                                    onCheckedChange = { checked ->
+                                        selectedIds = if (checked) {
+                                            selectedIds + entry.id
+                                        } else {
+                                            selectedIds - entry.id
+                                        }
+                                    },
+                                    modifier = Modifier.testTag("call_detail_checkbox_${entry.id}")
+                                )
+                            }
 
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40($isSelectionMode$delegate: MutableState, $selectedIds$delegate: MutableState, $allCallsForContact: List<*>, $confirmDeleteSelected$delegate: MutableState, $onCommitPendingUndo: Function0, $onBack: Function0, $confirmDeleteAll$delegate: MutableState, $this$item: LazyItemScope) {
-        // Strings: "$this$item", "C:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "186@7659L2293,180@7438L2514", "call_details_selection_bar", "243@9980L1230", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C249@10216L80,248@10180L302,261@10658L11,257@10495L201,265@10802L27,267@10913L28", "CC(remember):CallDetailsScreen.kt#9igjgp", "call_details_back_button", "Call History Details", "call_details_clear_all"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, Composer.Companion, ComposableSingletons$CallDetailsScreenKt.INSTANCE, FontWeight.Companion, MaterialTheme.INSTANCE, MaterialTheme.$stable, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$1()
-        // -> Composer.startReplaceGroup()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> TestTagKt.testTag()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda3.<init>()
-        // -> ComposableLambdaKt.rememberComposableLambda()
-        // -> LiquidGlassKt.LiquidGlassSurface-Sj8uqqQ()
-        // -> Composer.endReplaceGroup()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Arrangement.getSpaceBetween()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-    }
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        CallDirectionIcon(
+                                            direction = entry.direction,
+                                            isVideoCall = entry.isVideoCall
+                                        )
+                                        val dirLabel = when (entry.direction) {
+                                            CallDirection.INCOMING -> "Incoming call"
+                                            CallDirection.OUTGOING -> "Outgoing call"
+                                            CallDirection.MISSED -> "Missed call"
+                                            CallDirection.REJECTED -> "Rejected call"
+                                            CallDirection.BLOCKED -> "Blocked call"
+                                            CallDirection.VOICEMAIL -> "Voicemail"
+                                            CallDirection.UNKNOWN -> "Call"
+                                        }
+                                        Text(
+                                            text = dirLabel,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 14.5.sp,
+                                            color = if (
+                                                entry.direction == CallDirection.MISSED ||
+                                                entry.direction == CallDirection.REJECTED ||
+                                                entry.direction == CallDirection.BLOCKED
+                                            ) {
+                                                DialerBlockedRed
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurface
+                                            }
+                                        )
+                                        VoLteBoxBadge(
+                                            badge = entry.networkBadge,
+                                            isHdCall = entry.isHdCall
+                                        )
+                                    }
 
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$33($isSelectionMode$delegate: MutableState, $selectedIds$delegate: MutableState, $allCallsForContact: List<*>, $confirmDeleteSelected$delegate: MutableState, $this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C187@7673L2267:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C194@7961L682,211@8658L1268:CallDetailsScreen.kt#2thlc2", "C196@8071L110,195@8031L353,208@8588L11,204@8401L226:CallDetailsScreen.kt#2thlc2", "CC(remember):CallDetailsScreen.kt#9igjgp", "call_details_cancel_selection", " selected", "C213@8768L253,212@8728L624,230@9463L32,232@9593L317,228@9369L541:CallDetailsScre", "call_details_select_all", "call_details_delete_selected"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, Composer.Companion, ComposableSingletons$CallDetailsScreenKt.INSTANCE, FontWeight.Companion, MaterialTheme.INSTANCE, MaterialTheme.$stable, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-VpY3zN4()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Arrangement.getSpaceBetween()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-    }
+                                    Text(
+                                        text = dateFmt.format(Date(entry.timestampMillis)),
+                                        fontSize = 12.5.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
 
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$33$lambda$32$lambda$24$lambda$23$lambda$22($isSelectionMode$delegate: MutableState, $selectedIds$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$2()
-        // -> SetsKt.emptySet()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$5()
-    }
+                                val subStatusText = when (entry.direction) {
+                                    CallDirection.BLOCKED -> ""
+                                    CallDirection.MISSED, CallDirection.REJECTED -> {
+                                        val ringSec = if (entry.ringDurationSeconds > 0L) {
+                                            entry.ringDurationSeconds
+                                        } else {
+                                            entry.durationSeconds
+                                        }
+                                        "Rang for: ${formatDetailDuration(ringSec)}"
+                                    }
+                                    CallDirection.OUTGOING -> {
+                                        if (entry.durationSeconds > 0L) {
+                                            "Duration: ${formatDetailDuration(entry.durationSeconds)}"
+                                        } else {
+                                            val cleanReason = entry.disconnectReason.trim()
+                                            if (cleanReason.isNotBlank() &&
+                                                !cleanReason.equals("Call ended", ignoreCase = true) &&
+                                                !cleanReason.equals("Normal call end", ignoreCase = true) &&
+                                                !cleanReason.equals("Normal clearing", ignoreCase = true) &&
+                                                !cleanReason.equals("error-unspecified", ignoreCase = true) &&
+                                                !cleanReason.equals("ERROR_UNSPECIFIED", ignoreCase = true)
+                                            ) {
+                                                cleanReason
+                                            } else {
+                                                "Can't connect"
+                                            }
+                                        }
+                                    }
+                                    else -> "Duration: ${formatDetailDuration(entry.durationSeconds)}"
+                                }
 
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$33$lambda$32$lambda$31$lambda$27$lambda$26($allCallsForContact: List<*>, $selectedIds$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$4()
-        // -> Set.size()
-        // -> List.size()
-        // -> SetsKt.emptySet()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> ArrayList.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> CallLogEntry.getId()
-        // -> Long.valueOf()
-        // -> Collection.add()
-        // -> CollectionsKt.toSet()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$5()
-    }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    if (subStatusText.isNotBlank()) {
+                                        Text(
+                                            text = subStatusText,
+                                            fontSize = 12.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    } else {
+                                        Spacer(modifier = Modifier.width(1.dp))
+                                    }
+                                    OemSimChip(
+                                        slotNumber = entry.simSlotNumber,
+                                        label = entry.simCarrierName.ifBlank { entry.simSlotLabel }
+                                    )
+                                }
 
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$33$lambda$32$lambda$31$lambda$29$lambda$28($confirmDeleteSelected$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$8()
-    }
+                                matchedRecordings.forEach { rec ->
+                                    val isPlaying = currentlyPlayingPath == rec.filePath
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(DialerEmerald.copy(alpha = 0.14f))
+                                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Recording (${rec.durationSeconds}s)",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = DialerEmerald
+                                            )
+                                            Text(
+                                                text = rec.fileName,
+                                                fontSize = 10.5.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { onTogglePlayRecording(rec) },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                                contentDescription = if (isPlaying) "Stop" else "Play",
+                                                tint = DialerEmerald
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
 
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$33$lambda$32$lambda$31$lambda$30($selectedIds$delegate: MutableState) {
-        // Strings: "C233@9613L279:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "236@9825L11", "Delete Selected"
-        // Fields: Icons.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> DeleteKt.getDelete()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$4()
-        // -> Collection.isEmpty()
-        // -> Composer.startReplaceGroup()
-        // -> Composer.endReplaceGroup()
-        // -> ColorKt.getDialerCrimson()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> Color.copy-wmQWz5c$default()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) { data ->
+            Snackbar(
+                shape = RoundedCornerShape(12.dp),
+                containerColor = Color(0xFF1F232C),
+                contentColor = Color.White,
+                actionContentColor = Color(0xFFFFC107),
+                action = {
+                    val label = data.visuals.actionLabel
+                    if (label != null) {
+                        TextButton(onClick = { data.performAction() }) {
+                            Text(
+                                text = label,
+                                color = Color(0xFFFFC107),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            ) {
+                Text(
+                    text = data.visuals.message,
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+        }
     }
-
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$39$lambda$35$lambda$34($onCommitPendingUndo: Function0, $onBack: Function0) {
-        // Fields: Unit.INSTANCE
-        // -> Function0.invoke()
-    }
-
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$39$lambda$37$lambda$36($confirmDeleteAll$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$11()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$40$lambda$39$lambda$38($allCallsForContact: List<*>) {
-        // Strings: "C268@10929L255:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "271@11120L11", "Clear History"
-        // Fields: Icons.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> DeleteKt.getDelete()
-        // -> Collection.isEmpty()
-        // -> Composer.startReplaceGroup()
-        // -> Composer.endReplaceGroup()
-        // -> ColorKt.getDialerCrimson()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> Color.copy-wmQWz5c$default()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$47($displayTitle: String, $photoUri: String, $phoneNumber: String, $clipboard: ClipboardManager, $context: Context, $onAudioCall: Function0, $onVideoCall: Function0, $onMessage: Function0, $isSavedContact: Boolean, $onSaveContact: Function0, $isBlocked: Boolean, $onToggleBlock: Function0, $this$item: LazyItemScope) {
-        // Strings: "$this$item", "C280@11390L2213,280@11285L2318:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an"
-        // Fields: Modifier.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda32.<init>()
-        // -> ComposableLambdaKt.rememberComposableLambda()
-        // -> LiquidGlassKt.LiquidGlassSurface-Sj8uqqQ()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$47$lambda$46($displayTitle: String, $photoUri: String, $phoneNumber: String, $clipboard: ClipboardManager, $context: Context, $onAudioCall: Function0, $onVideoCall: Function0, $onMessage: Function0, $isSavedContact: Boolean, $onSaveContact: Function0, $isBlocked: Boolean, $onToggleBlock: Function0, $this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C281@11402L2191:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C87@4365L9:Column.kt#2w3rfo", "C288@11655L169,299@11991L11,295@11838L264,307@12253L11,310@12428L149,304@12116L5", "Private Number", "CC(remember):CallDetailsScreen.kt#9igjgp", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "C100@5047L9:Row.kt#2w3rfo", "C323@12867L72,324@12954L76,325@13124L11,325@13045L110,329@13347L220:CallDetailsS", "Call", "Video", "Message"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, ColumnScopeInstance.INSTANCE, FontWeight.Companion, MaterialTheme.INSTANCE, MaterialTheme.$stable, TextOverflow.Companion, Composer.Companion, RowScopeInstance.INSTANCE, Icons.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-3ABfNKs()
-        // -> Alignment$Companion.getCenterHorizontally()
-        // -> Arrangement.spacedBy-0680j_4()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> ColumnKt.columnMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-    }
-
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$47$lambda$46$lambda$45$lambda$43$lambda$42($clipboard: ClipboardManager, $phoneNumber: String, $context: Context) {
-        // Strings: "Copied "
-        // Fields: AppToast.INSTANCE, Unit.INSTANCE
-        // -> AnnotatedString.<init>()
-        // -> ClipboardManager.setText()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> AppToast.show$default()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$49($allCallsForContact: List<*>, $isSelectionMode$delegate: MutableState, $this$item: LazyItemScope) {
-        // Strings: "$this$item", "C342@13659L751:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C353@14075L11,349@13902L213:CallDetailsScreen.kt#2thlc2", "All Calls (", ")", "359@14326L11,356@14197L191", "Hold to mark • Swipe to delete"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, FontWeight.Companion, MaterialTheme.INSTANCE, MaterialTheme.$stable, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-VpY3zN4$default()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Arrangement.getSpaceBetween()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-    }
-
-    fun CallDetailsScreen$lambda$64$lambda$56$lambda$55$lambda$50(it: CallLogEntry): Any {
-        // Strings: "it"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> CallLogEntry.getId()
-        // -> Long.valueOf()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun CallDetailsScreen$lambda$64$lambda$58$lambda$57(it: Int): Int {
-        TODO("Decoded 1 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun CallDetailsScreen$lambda$64$lambda$60$lambda$59(it: Int): Int {
-        TODO("Decoded 1 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$63($onUndoDeleteEntry: Function0, $this$AnimatedVisibility: AnimatedVisibilityScope) {
-        // Strings: "$this$AnimatedVisibility", "C649@26628L851,640@26336L1143:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous> (CallDetailsScr", "call_details_undo_bar"
-        // Fields: Color.Companion, Modifier.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> ColorKt.Color()
-        // -> Color$Companion.getWhite-0d7_KjU()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> TestTagKt.testTag()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda33.<init>()
-        // -> ComposableLambdaKt.rememberComposableLambda()
-        // -> SurfaceKt.Surface-T9BRK9s()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$64$lambda$63$lambda$62($onUndoDeleteEntry: Function0) {
-        // Strings: "C650@26638L833:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous> (Ca", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C657@26916L153,663@27080L381:CallDetailsScreen.kt#2thlc2", "Deleted", "call_details_undo_button"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, FontWeight.Companion, Color.Companion, ComposableSingletons$CallDetailsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-qDBjuR0()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Arrangement.getSpaceBetween()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-        // -> Composer.getInserting()
-    }
-
-    fun CallDetailsScreen$lambda$66$lambda$65($confirmDeleteSelected$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$8()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$69($onDeleteSelectedEntries: Function1, $selectedIds$delegate: MutableState, $confirmDeleteSelected$delegate: MutableState, $isSelectionMode$delegate: MutableState) {
-        // Strings: "C695@28107L44,688@27843L228,687@27815L480:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous> (CallDetailsScreen.kt:687)", "confirm_delete_selected_call_logs", "CC(remember):CallDetailsScreen.kt#9igjgp"
-        // Fields: ButtonDefaults.INSTANCE, ButtonDefaults.$stable, Modifier.Companion, Composer.Companion, ComposableSingletons$CallDetailsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ColorKt.getDialerCrimson()
-        // -> ButtonDefaults.buttonColors-ro_MJ88()
-        // -> TestTagKt.testTag()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.changed()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda30.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ComposableSingletons$CallDetailsScreenKt.getLambda$-316776256$app()
-        // -> ButtonKt.Button()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun CallDetailsScreen$lambda$69$lambda$68$lambda$67($onDeleteSelectedEntries: Function1, $selectedIds$delegate: MutableState, $confirmDeleteSelected$delegate: MutableState, $isSelectionMode$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$4()
-        // -> CollectionsKt.toList()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$8()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$2()
-        // -> SetsKt.emptySet()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$5()
-        // -> Function1.invoke()
-    }
-
-    private fun CallDetailsScreen$lambda$7($confirmDeleteSelected$delegate: MutableState): Boolean {
-        // -> State.getValue()
-        // -> Boolean.booleanValue()
-        TODO("Decoded 11 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$72($confirmDeleteSelected$delegate: MutableState) {
-        // Strings: "C702@28358L33,702@28337L74:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous> (CallDetailsScreen.kt:702)", "CC(remember):CallDetailsScreen.kt#9igjgp"
-        // Fields: Composer.Companion, ComposableSingletons$CallDetailsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda7.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ComposableSingletons$CallDetailsScreenKt.getLambda$802448911$app()
-        // -> ButtonKt.TextButton()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun CallDetailsScreen$lambda$72$lambda$71$lambda$70($confirmDeleteSelected$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$8()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$73($displayTitle: String, $selectedIds$delegate: MutableState) {
-        // Strings: "C685@27697L82:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous> (CallDetailsScreen.kt:685)", "Delete ", " selected call log entry(ies) for ", "?"
-        // Fields: Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$4()
-        // -> Set.size()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun CallDetailsScreen$lambda$75$lambda$74($confirmDeleteAll$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$11()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$78($onDeleteAllForContact: Function0, $confirmDeleteAll$delegate: MutableState) {
-        // Strings: "C714@28774L86,718@28896L44,713@28746L266:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous> (CallDetailsScreen.kt:713)", "CC(remember):CallDetailsScreen.kt#9igjgp"
-        // Fields: Composer.Companion, ButtonDefaults.INSTANCE, ButtonDefaults.$stable, ComposableSingletons$CallDetailsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.changed()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda26.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ColorKt.getDialerCrimson()
-        // -> ButtonDefaults.buttonColors-ro_MJ88()
-        // -> ComposableSingletons$CallDetailsScreenKt.getLambda$-1083683671$app()
-        // -> ButtonKt.Button()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun CallDetailsScreen$lambda$78$lambda$77$lambda$76($onDeleteAllForContact: Function0, $confirmDeleteAll$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$11()
-        // -> Function0.invoke()
-    }
-
-    private fun CallDetailsScreen$lambda$8($confirmDeleteSelected$delegate: MutableState, <set-?>: Boolean) {
-        // -> Boolean.valueOf()
-        // -> MutableState.setValue()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$81($confirmDeleteAll$delegate: MutableState) {
-        // Strings: "C724@29075L28,724@29054L69:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous> (CallDetailsScreen.kt:724)", "CC(remember):CallDetailsScreen.kt#9igjgp"
-        // Fields: Composer.Companion, ComposableSingletons$CallDetailsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda31.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ComposableSingletons$CallDetailsScreenKt.getLambda$749877816$app()
-        // -> ButtonKt.TextButton()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun CallDetailsScreen$lambda$81$lambda$80$lambda$79($confirmDeleteAll$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$11()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$82($allCallsForContact: List<*>, $displayTitle: String) {
-        // Strings: "C711@28629L81:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous> (CallDetailsScreen.kt:711)", "Delete all ", " call log entries for ", "?"
-        // Fields: Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> List.size()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun CallDetailsScreen$lambda$83(p0: String, p1: String, p2: String, p3: Boolean, p4: Boolean, p5: List<*>, p6: List<*>, p7: Boolean, p8: String, p9: CallLogEntry, p10: Function0, p11: Function0, p12: Function0, p13: Function0, p14: Function0, p15: Function0, p16: Function0, p17: Function1, p18: Function1, p19: Function0, p20: Function0, p21: Function1, p22: Int, p23: Int, p24: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> CallDetailsScreenKt.CallDetailsScreen()
-    }
-
-    @Composable
-    private fun DetailActionButton-FNF3uiM(icon: ImageVector, label: String, tint: Long, onClick: Function0) {
-        // Strings: "C(DetailActionButton)P(!2,3:c#ui.graphics.Color)741@29414L13,737@29270L594:CallD", "com.example.ui.screens.DetailActionButton (CallDetailsScreen.kt:736)", "CC(remember):CallDetailsScreen.kt#9igjgp", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C87@4365L9:Column.kt#2w3rfo", "C744@29489L258,752@29752L29,753@29838L11,753@29786L74:CallDetailsScreen.kt#2thlc", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo", "C73@3429L9:Box.kt#2w3rfo", "C750@29657L84:CallDetailsScreen.kt#2thlc2"
-        // Fields: Alignment.Companion, Modifier.Companion, Composer.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, ColumnScopeInstance.INSTANCE, BoxScopeInstance.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.changedInstance()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Alignment$Companion.getCenterHorizontally()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> ClipKt.clip()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallDetailsScreenKt$$ExternalSyntheticLambda27.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ClickableKt.clickable-XHw0xAI$default()
-        // -> PaddingKt.padding-VpY3zN4()
-    }
-
-    fun DetailActionButton_FNF3uiM$lambda$85$lambda$84($onClick: Function0) {
-        // Fields: Unit.INSTANCE
-        // -> Function0.invoke()
-    }
-
-    @Composable
-    fun DetailActionButton_FNF3uiM$lambda$88(p0: ImageVector, p1: String, p2: Long, p3: Function0, p4: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> CallDetailsScreenKt.DetailActionButton-FNF3uiM()
-    }
-
-    fun access$CallDetailsScreen$lambda$1($isSelectionMode$delegate: MutableState): Boolean {
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$1()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun access$CallDetailsScreen$lambda$13($swipeResetCounter$delegate: MutableIntState): Int {
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$13()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun access$CallDetailsScreen$lambda$14($swipeResetCounter$delegate: MutableIntState, <set-?>: Int) {
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$14()
-    }
-
-    fun access$CallDetailsScreen$lambda$2($isSelectionMode$delegate: MutableState, <set-?>: Boolean) {
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$2()
-    }
-
-    fun access$CallDetailsScreen$lambda$4($selectedIds$delegate: MutableState): Set<*> {
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$4()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun access$CallDetailsScreen$lambda$5($selectedIds$delegate: MutableState, <set-?>: Set<*>) {
-        // -> CallDetailsScreenKt.CallDetailsScreen$lambda$5()
-    }
-
-    fun access$formatMmSs(seconds: Long): String {
-        // -> CallDetailsScreenKt.formatMmSs()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun formatMmSs(seconds: Long): String {
-        // Strings: "s", "m "
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 24 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }
 
-object ComposableSingletons$CallDetailsScreenKt {
-    companion object {
-        var lambda$-1037617835: Function2
-        var lambda$-1080739015: Function3
-        var lambda$-1083683671: Function3
-        var lambda$-1928905874: Function3
-        var lambda$-316776256: Function3
-        var lambda$1593685540: Function2
-        var lambda$1596197053: Function2
-        var lambda$1996624340: Function2
-        var lambda$478073246: Function2
-        var lambda$749877816: Function3
-        var lambda$802448911: Function3
-        var lambda$918584523: Function3
+@Composable
+private fun PastelActionCircleButton(
+    icon: ImageVector,
+    label: String,
+    circleColor: Color,
+    iconTint: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isDimmed: Boolean = false
+) {
+    Column(
+        modifier = modifier.alpha(if (isDimmed) 0.38f else 1f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(circleColor)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = iconTint,
+                modifier = Modifier.size(21.dp)
+            )
+        }
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
-
-    constructor() {
-        // -> Object.<init>()
-    }
-
-    @Composable
-    fun lambda_1593685540$lambda$2() {
-        // Strings: "C255@10398L70:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$159368554", "Back"
-        // Fields: Icons$AutoMirrored$Filled.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ArrowBackKt.getArrowBack()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda_1596197053$lambda$12() {
-        // Strings: "C710@28545L65:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$159619705", "Delete Contact Call History"
-        // Fields: FontWeight.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> FontWeight$Companion.getBold()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda_1996624340$lambda$9() {
-        // Strings: "C684@27615L63:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$199662434", "Delete Selected Call Logs"
-        // Fields: FontWeight.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> FontWeight$Companion.getBold()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda_478073246$lambda$0() {
-        // Strings: "C202@8300L66:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$478073246", "Cancel Selection"
-        // Fields: Icons.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> CloseKt.getClose()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda_749877816$lambda$11($this$TextButton: RowScope) {
-        // Strings: "$this$TextButton", "C724@29107L14:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$749877816", "Cancel"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda_802448911$lambda$8($this$TextButton: RowScope) {
-        // Strings: "$this$TextButton", "C702@28395L14:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$802448911", "Cancel"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda_918584523$lambda$6($this$TextButton: RowScope) {
-        // Strings: "$this$TextButton", "C669@27291L158:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$918584523", "UNDO"
-        // Fields: FontWeight.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextUnitKt.getSp()
-        // -> FontWeight$Companion.getBold()
-        // -> ColorKt.getDialerAmber()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda__1037617835$lambda$1() {
-        // Strings: "C225@9295L11,222@9134L200:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$-10376178", "Select All"
-        // Fields: Icons.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> SelectAllKt.getSelectAll()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getPrimary-0d7_KjU()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda__1080739015$lambda$4($this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C368@14606L770:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$-10807390", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C87@4365L9:Column.kt#2w3rfo", "C378@15042L11,375@14903L232,385@15318L11,381@15150L212:CallDetailsScreen.kt#2thl", "No call history"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, ColumnScopeInstance.INSTANCE, Icons.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, FontWeight.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-VpY3zN4()
-        // -> Alignment$Companion.getCenterHorizontally()
-        // -> Arrangement.spacedBy-0680j_4()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> ColumnKt.columnMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-    }
-
-    @Composable
-    fun lambda__1083683671$lambda$10($this$Button: RowScope) {
-        // Strings: "$this$Button", "C720@28963L39:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$-10836836", "Delete All"
-        // Fields: Color.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Color$Companion.getWhite-0d7_KjU()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda__1928905874$lambda$5($this$item: LazyItemScope) {
-        // Strings: "$this$item", "C367@14487L901:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$-19289058"
-        // Fields: Modifier.Companion, ComposableSingletons$CallDetailsScreenKt.lambda$-1080739015, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> LiquidGlassKt.LiquidGlassSurface-Sj8uqqQ()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun lambda__316776256$lambda$7($this$Button: RowScope) {
-        // Strings: "$this$Button", "C698@28250L35:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$CallDetailsScreenKt.lambda$-31677625", "Delete"
-        // Fields: Color.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Color$Companion.getWhite-0d7_KjU()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun getLambda$-1037617835$app(): Function2 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$-1037617835
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$-1080739015$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$-1080739015
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$-1083683671$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$-1083683671
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$-1928905874$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$-1928905874
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$-316776256$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$-316776256
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$1593685540$app(): Function2 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$1593685540
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$1596197053$app(): Function2 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$1596197053
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$1996624340$app(): Function2 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$1996624340
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$478073246$app(): Function2 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$478073246
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$749877816$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$749877816
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$802448911$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$802448911
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$918584523$app(): Function3 {
-        // Fields: ComposableSingletons$CallDetailsScreenKt.lambda$918584523
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }
 
-class CallDetailsScreenKt$CallDetailsScreen$1$1 : SuspendLambda(), Function2 {
-    var label: Int
-
-    constructor(p0: List<*>, p1: MutableState, p2: MutableState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$1$1.$allCallsForContact, CallDetailsScreenKt$CallDetailsScreen$1$1.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$1$1.$isSelectionMode$delegate
-        // -> SuspendLambda.<init>()
-    }
-
-    suspend fun create(p0: Any): Continuation {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$1$1.$allCallsForContact, CallDetailsScreenKt$CallDetailsScreen$1$1.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$1$1.$isSelectionMode$delegate
-        // -> CallDetailsScreenKt$CallDetailsScreen$1$1.<init>()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> CallDetailsScreenKt$CallDetailsScreen$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    suspend fun invoke(p0: CoroutineScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt$CallDetailsScreen$1$1.create()
-        // -> CallDetailsScreenKt$CallDetailsScreen$1$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "call to 'resume' before 'invoke' with coroutine"
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$1$1.label, CallDetailsScreenKt$CallDetailsScreen$1$1.$allCallsForContact, CallDetailsScreenKt$CallDetailsScreen$1$1.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$1$1.$isSelectionMode$delegate, Unit.INSTANCE
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> ArrayList.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> CallLogEntry.getId()
-        // -> Boxing.boxLong()
-        // -> Collection.add()
-        // -> CollectionsKt.toSet()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$4()
-        // -> CollectionsKt.intersect()
-        // -> Intrinsics.areEqual()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$5()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$1()
-        // -> List.isEmpty()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$2()
-        TODO("Decoded 71 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$2 : Function3 {
-    constructor(p0: SwipeToDismissBoxState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$2.$dismissState
-        // -> Object.<init>()
-    }
-
-    fun invoke(p1: Any, p2: Any, p3: Any): Any {
-        // Fields: Unit.INSTANCE
-        // -> Number.intValue()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$2.invoke()
-        TODO("Decoded 11 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun invoke($this$SwipeToDismissBox: RowScope) {
-        // Strings: "$this$SwipeToDismissBox", "C:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "C73@3429L9:Box.kt#2w3rfo", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo", "429@16800L419", "C437@17107L96:CallDetailsScreen.kt#2thlc2", "Send Message", "440@17301L409", "C448@17608L86:CallDetailsScreen.kt#2thlc2", "Delete Call Log"
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$2.$dismissState, SwipeToDismissBoxValue.StartToEnd, Modifier.Companion, Alignment.Companion, ComposeUiNode.Companion, BoxScopeInstance.INSTANCE, Icons$AutoMirrored$Filled.INSTANCE, Color.Companion, SwipeToDismissBoxValue.EndToStart, Icons.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SwipeToDismissBoxState.getDismissDirection()
-        // -> Composer.startReplaceGroup()
-        // -> SizeKt.fillMaxSize$default()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> ClipKt.clip()
-        // -> ColorKt.getDialerGreen()
-        // -> BackgroundKt.background-bw27NRU$default()
-        // -> PaddingKt.padding-VpY3zN4$default()
-        // -> Alignment$Companion.getCenterStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> BoxKt.maybeCachedBoxMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3 : Function3 {
-    constructor(p0: Boolean, p1: CallLogEntry, p2: MutableState, p3: MutableState, p4: List<*>, p5: String, p6: Function1) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$isSelected, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$matchedRecordings, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$currentlyPlayingPath, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$onTogglePlayRecording
-        // -> Object.<init>()
-    }
-
-    fun invoke(p1: Any, p2: Any, p3: Any): Any {
-        // Fields: Unit.INSTANCE
-        // -> Number.intValue()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.invoke()
-        TODO("Decoded 11 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun invoke($this$SwipeToDismissBox: RowScope) {
-        // Strings: "$this$SwipeToDismissBox", "C465@18295L115,460@18082L181,471@18495L7392,453@17759L8128:CallDetailsScreen.kt#", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "456@17929L11", "CC(remember):CallDetailsScreen.kt#9igjgp", "call_detail_entry_"
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$isSelected, MaterialTheme.INSTANCE, MaterialTheme.$stable, Modifier.Companion, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$selectedIds$delegate, Composer.Companion, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$matchedRecordings, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$currentlyPlayingPath, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3.$onTogglePlayRecording
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> Composer.startReplaceGroup()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getPrimary-0d7_KjU()
-        // -> Composer.endReplaceGroup()
-        // -> Color.box-impl()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.changed()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.<init>()
-        // -> Composer.updateRememberedValue()
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1 : SuspendLambda(), Function2 {
-    var label: Int
-
-    constructor(p0: SwipeToDismissBoxState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.$dismissState
-        // -> SuspendLambda.<init>()
-    }
-
-    suspend fun create(p0: Any): Continuation {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.$dismissState
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.<init>()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    suspend fun invoke(p0: CoroutineScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.create()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "call to 'resume' before 'invoke' with coroutine"
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.label, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$1$1.$dismissState, SwipeToDismissBoxValue.Settled, Unit.INSTANCE
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> SwipeToDismissBoxState.getCurrentValue()
-        // -> SwipeToDismissBoxState.reset()
-        TODO("Decoded 30 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3 : Function3 {
-    constructor(p0: Boolean, p1: CallLogEntry, p2: MutableState, p3: MutableState, p4: List<*>, p5: String, p6: Function1) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$isSelected, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$matchedRecordings, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$currentlyPlayingPath, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$onTogglePlayRecording
-        // -> Object.<init>()
-    }
-
-    fun invoke(p1: Any, p2: Any, p3: Any): Any {
-        // Fields: Unit.INSTANCE
-        // -> Number.intValue()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.invoke()
-        TODO("Decoded 11 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun invoke($this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C472@18509L7366:CallDetailsScreen.kt#2thlc2", "com.example.ui.screens.CallDetailsScreen.<anonymous>.<anonymous>.<anonymous>.<an", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C489@19190L6671:CallDetailsScreen.kt#2thlc2", "CC(remember):CallDetailsScreen.kt#9igjgp", "482@18927L130,480@18841L317", "call_detail_checkbox_", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "C87@4365L9:Column.kt#2w3rfo", "C493@19345L2041,533@21404L1932:CallDetailsScreen.kt#2thlc2", "C498@19575L1519,529@21320L11,526@21114L254:CallDetailsScreen.kt#2thlc2", "C499@19701L50,501@19852L1008,521@20995L11,519@20881L193:CallDetailsScreen.kt#2th"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$isSelected, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$matchedRecordings, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$currentlyPlayingPath, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3.$onTogglePlayRecording, ComposeUiNode.Companion, RowScopeInstance.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-VpY3zN4()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Arrangement.spacedBy-0680j_4()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1 : Function0 {
-    constructor(p0: CallLogEntry, p1: MutableState, p2: MutableState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.$selectedIds$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$1$1.$entry
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$2()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$4()
-        // -> CallLogEntry.getId()
-        // -> Long.valueOf()
-        // -> SetsKt.plus()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$5()
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1 : Function0 {
-    constructor(p0: Boolean, p1: CallLogEntry, p2: MutableState, p3: MutableState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$isSelected, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$selectedIds$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$isSelected, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$2$1.$entry
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$1()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$4()
-        // -> CallLogEntry.getId()
-        // -> Long.valueOf()
-        // -> SetsKt.minus()
-        // -> SetsKt.plus()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$5()
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1 : Function1 {
-    constructor(p0: Function0, p1: Function1, p2: CallLogEntry, p3: MutableState, p4: MutableIntState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$onMessage, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$onSwipeDeleteEntry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$swipeResetCounter$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(value: SwipeToDismissBoxValue): Boolean {
-        // Strings: "value"
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$isSelectionMode$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1$WhenMappings.$EnumSwitchMapping$0, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$onSwipeDeleteEntry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$onMessage, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.$swipeResetCounter$delegate
-        // -> Intrinsics.checkNotNullParameter()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$1()
-        // -> Boolean.valueOf()
-        // -> SwipeToDismissBoxValue.ordinal()
-        // -> Function1.invoke()
-        // -> Function0.invoke()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$13()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$14()
-        TODO("Decoded 35 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p1: Any): Any {
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-object CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$2$1 : Function1 {
-    constructor() {
-        // -> Object.<init>()
-    }
-
-    fun invoke(totalDistance: Float): Float {
-        // -> Float.valueOf()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p1: Any): Any {
-        // -> Number.floatValue()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$2$1.invoke()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$dismissState$1$1$WhenMappings {
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$1$1 : Function1 {
-    constructor(p0: CallLogEntry, p1: MutableState) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$1$1.$entry, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$1$1.$selectedIds$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(p1: Any): Any {
-        // Fields: Unit.INSTANCE
-        // -> Boolean.booleanValue()
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$1$1.invoke()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(checked: Boolean) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$1$1.$selectedIds$delegate, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$1$1.$entry
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$4()
-        // -> CallLogEntry.getId()
-        // -> Long.valueOf()
-        // -> SetsKt.plus()
-        // -> SetsKt.minus()
-        // -> CallDetailsScreenKt.access$CallDetailsScreen$lambda$5()
-    }
-
-}
-
-class CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$2$3$1$1 : Function0 {
-    constructor(p0: Function1, p1: RecordingEntry) {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$2$3$1$1.$onTogglePlayRecording, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$2$3$1$1.$rec
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$2$3$1$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$2$3$1$1.$onTogglePlayRecording, CallDetailsScreenKt$CallDetailsScreen$4$1$1$5$3$3$1$2$3$1$1.$rec
-        // -> Function1.invoke()
-    }
-
+private fun formatDetailDuration(seconds: Long): String {
+    if (seconds <= 0L) return "0 sec"
+    if (seconds < 60L) return "$seconds sec"
+    val mins = seconds / 60L
+    val rem = seconds % 60L
+    return if (rem > 0L) "${mins}m ${rem}s" else "${mins}m"
 }

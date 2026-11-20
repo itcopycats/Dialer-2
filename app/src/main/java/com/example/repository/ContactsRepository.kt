@@ -1,834 +1,774 @@
-// Reconstructed from APK DEX metadata & bytecode (ContactsRepository.kt)
 package com.example.repository
 
+import android.accounts.AccountManager
+import android.content.ContentProviderOperation
+import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.provider.ContactsContract
+import android.provider.SimPhonebookContract
+import androidx.core.content.FileProvider
 import com.example.model.ContactAccountOption
 import com.example.model.ContactItem
 import com.example.model.ContactStorageType
-import java.util.List
-import java.util.Set
-
-object ContactsRepository {
-    private constructor() {
-        // -> Object.<init>()
+import com.example.model.DuplicateContactGroup
+import com.example.model.SelectableTargetContact
+import com.example.model.SimAccountInfo
+import com.example.util.PermissionHelper
+import com.example.util.SimAccountHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+
+class ContactsRepository(private val context: Context) {
+    private val appContext = context.applicationContext
+
+    suspend fun loadContacts(): List<ContactItem> = withContext(Dispatchers.IO) {
+        if (!PermissionHelper.hasContactsPermission(appContext)) {
+            return@withContext emptyList()
+        }
+
+        val simAccounts = SimAccountHelper.getAvailableSimAccounts(appContext)
+        val contactsMap = LinkedHashMap<Long, MutableContactBuilder>()
+
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+            ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI,
+            ContactsContract.CommonDataKinds.Phone.STARRED,
+            ContactsContract.RawContacts.ACCOUNT_NAME,
+            ContactsContract.RawContacts.ACCOUNT_TYPE
+        )
+
+        runCatching {
+            appContext.contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                projection,
+                null,
+                null,
+                "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY} COLLATE NOCASE ASC"
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
+                val lookupIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY)
+                val nameIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY)
+                val numIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                val photoIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI)
+                val starIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.STARRED)
+                val accNameIdx = cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_NAME)
+                val accTypeIdx = cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE)
+
+                while (cursor.moveToNext()) {
+                    val contactId = if (idIdx >= 0) cursor.getLong(idIdx) else continue
+                    val lookupKey = if (lookupIdx >= 0) cursor.getString(lookupIdx).orEmpty() else ""
+                    val displayName = if (nameIdx >= 0) cursor.getString(nameIdx).orEmpty() else ""
+                    val rawNumber = if (numIdx >= 0) cursor.getString(numIdx).orEmpty().trim() else ""
+                    val photoUri = if (photoIdx >= 0) cursor.getString(photoIdx).orEmpty() else ""
+                    val starred = if (starIdx >= 0) cursor.getInt(starIdx) == 1 else false
+                    val accountName = if (accNameIdx >= 0) cursor.getString(accNameIdx).orEmpty() else ""
+                    val accountType = if (accTypeIdx >= 0) cursor.getString(accTypeIdx).orEmpty() else ""
+
+                    val (storageType, simSlot) = classifyAccount(accountName, accountType)
+                    val builder = contactsMap.getOrPut(contactId) {
+                        MutableContactBuilder(
+                            id = contactId,
+                            lookupKey = lookupKey,
+                            displayName = displayName.ifBlank { rawNumber },
+                            photoUri = photoUri,
+                            isStarred = starred,
+                            accountName = accountName,
+                            accountType = accountType,
+                            storageType = storageType,
+                            simSlotIndex = simSlot
+                        )
+                    }
+                    if (rawNumber.isNotBlank()) {
+                        val normNew = BlocklistRepository.normalizePhoneNumber(rawNumber)
+                        val alreadyHas = builder.numbers.any {
+                            BlocklistRepository.normalizePhoneNumber(it) == normNew
+                        }
+                        if (!alreadyHas) {
+                            builder.numbers.add(rawNumber)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also query direct ADN SIM URIs if present and not already returned
+        val simUris = listOf(
+            0 to Uri.parse("content://icc/adn"),
+            0 to Uri.parse("content://icc/adn/subId/${simAccounts.getOrNull(0)?.subscriptionId ?: 1}"),
+            1 to Uri.parse("content://icc/adn/subId/${simAccounts.getOrNull(1)?.subscriptionId ?: 2}")
+        )
+        var syntheticSimId = -10_000L
+        for ((slotIdx, uri) in simUris) {
+            runCatching {
+                appContext.contentResolver.query(uri, null, null, null, null)?.use { c ->
+                    val nameIdx = c.getColumnIndex("name").takeIf { it >= 0 } ?: c.getColumnIndex("tag")
+                    val numIdx = c.getColumnIndex("number")
+                    while (c.moveToNext()) {
+                        val name = if (nameIdx >= 0) c.getString(nameIdx).orEmpty().trim() else ""
+                        val number = if (numIdx >= 0) c.getString(numIdx).orEmpty().trim() else ""
+                        if (name.isBlank() && number.isBlank()) continue
+                        val norm = BlocklistRepository.normalizePhoneNumber(number)
+                        val existsInProvider = contactsMap.values.any { b ->
+                            b.storageType == ContactStorageType.SIM_CARD &&
+                                b.numbers.any { BlocklistRepository.normalizePhoneNumber(it) == norm }
+                        }
+                        if (!existsInProvider) {
+                            val id = syntheticSimId--
+                            contactsMap[id] = MutableContactBuilder(
+                                id = id,
+                                lookupKey = "sim_${slotIdx}_$id",
+                                displayName = name.ifBlank { number },
+                                photoUri = "",
+                                isStarred = false,
+                                accountName = "SIM ${slotIdx + 1}",
+                                accountType = "com.android.sim",
+                                storageType = ContactStorageType.SIM_CARD,
+                                simSlotIndex = slotIdx,
+                                numbers = mutableListOf(number)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        contactsMap.values
+            .map { it.build() }
+            .sortedBy { it.displayName.lowercase() }
+    }
+
+    fun getAvailableAccountOptions(simAccounts: List<SimAccountInfo>): List<ContactAccountOption> {
+        val options = mutableListOf<ContactAccountOption>()
+
+        options.add(
+            ContactAccountOption(
+                label = "Phone Only (Device Storage)",
+                subtitle = "Local device contacts",
+                accountName = null,
+                accountType = null,
+                storageType = ContactStorageType.PHONE_ONLY,
+                simSlotIndex = -1
+            )
+        )
+
+        runCatching {
+            val am = AccountManager.get(appContext)
+            val googleAccounts = am.accounts.filter { it.type.contains("com.google", ignoreCase = true) }
+            for (acc in googleAccounts) {
+                options.add(
+                    ContactAccountOption(
+                        label = "Google (${acc.name})",
+                        subtitle = "Cloud synced Google Contacts",
+                        accountName = acc.name,
+                        accountType = acc.type,
+                        storageType = ContactStorageType.GOOGLE_ACCOUNT,
+                        simSlotIndex = -1
+                    )
+                )
+            }
+        }
+
+        for (sim in simAccounts) {
+            val carrierSuffix = sim.carrierName.takeIf { it.isNotBlank() }?.let { " ($it)" }.orEmpty()
+            options.add(
+                ContactAccountOption(
+                    label = "${sim.displayName}$carrierSuffix",
+                    subtitle = sim.carrierName.ifBlank { "SIM Slot ${sim.slotIndex + 1} ADN Storage" },
+                    accountName = "SIM ${sim.slotIndex + 1}",
+                    accountType = "com.android.sim",
+                    storageType = ContactStorageType.SIM_CARD,
+                    simSlotIndex = sim.slotIndex
+                )
+            )
+        }
+
+        return options
+    }
+
+    fun detectDuplicates(contacts: List<ContactItem>): List<DuplicateContactGroup> {
+        if (contacts.size < 2) return emptyList()
+        val results = mutableListOf<DuplicateContactGroup>()
+        val usedIds = mutableSetOf<Long>()
+
+        val byName = contacts
+            .filter { it.displayName.isNotBlank() }
+            .groupBy { it.displayName.trim().lowercase() }
+
+        for ((nameKey, group) in byName) {
+            if (group.size >= 2) {
+                usedIds.addAll(group.map { it.id })
+                results.add(
+                    DuplicateContactGroup(
+                        groupKey = "dup_name_$nameKey",
+                        displayTitle = group.first().displayName,
+                        reason = "${group.size} contacts share the exact name \"${group.first().displayName}\"",
+                        contacts = group
+                    )
+                )
+            }
+        }
+
+        val byNumber = LinkedHashMap<String, MutableList<ContactItem>>()
+        for (c in contacts) {
+            if (usedIds.contains(c.id)) continue
+            for (num in c.phoneNumbers) {
+                val norm = BlocklistRepository.normalizePhoneNumber(num)
+                if (norm.length >= 7) {
+                    val bucket = byNumber.getOrPut(norm) { ArrayList() }
+                    if (bucket.none { it.id == c.id }) {
+                        bucket.add(c)
+                    }
+                }
+            }
+        }
+
+        for ((normKey, group) in byNumber) {
+            if (group.size >= 2) {
+                results.add(
+                    DuplicateContactGroup(
+                        groupKey = "dup_num_$normKey",
+                        displayTitle = group.first().displayName,
+                        reason = "${group.size} contacts share number ${group.first().primaryNumber}",
+                        contacts = group
+                    )
+                )
+            }
+        }
+
+        return results
+    }
+
+    suspend fun createContact(
+        displayName: String,
+        phoneNumber: String,
+        targetOption: ContactAccountOption,
+        email: String = ""
+    ): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+        if (!PermissionHelper.hasWriteContactsPermission(appContext)) {
+            return@withContext false to "Contacts write permission required"
+        }
+        val cleanName = displayName.trim().ifBlank { phoneNumber.trim() }
+        val cleanPhone = phoneNumber.trim()
+        val cleanEmail = email.trim()
+        if (cleanPhone.isBlank()) {
+            return@withContext false to "Phone number cannot be empty"
+        }
+
+        if (targetOption.storageType == ContactStorageType.SIM_CARD) {
+            val simSaved = insertSimAdnContact(cleanName, cleanPhone, targetOption.simSlotIndex.coerceAtLeast(0))
+            if (simSaved) {
+                return@withContext true to "Saved \"$cleanName\" to ${targetOption.label}"
+            }
+        }
+
+        return@withContext runCatching {
+            val ops = ArrayList<ContentProviderOperation>()
+            ops.add(
+                ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                    .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, targetOption.accountType)
+                    .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, targetOption.accountName)
+                    .build()
+            )
+            ops.add(
+                ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(
+                        ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
+                    )
+                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, cleanName)
+                    .build()
+            )
+            ops.add(
+                ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withValue(
+                        ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE
+                    )
+                    .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, cleanPhone)
+                    .withValue(
+                        ContactsContract.CommonDataKinds.Phone.TYPE,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE
+                    )
+                    .build()
+            )
+            if (cleanEmail.isNotBlank()) {
+                ops.add(
+                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(
+                            ContactsContract.Data.MIMETYPE,
+                            ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE
+                        )
+                        .withValue(ContactsContract.CommonDataKinds.Email.ADDRESS, cleanEmail)
+                        .withValue(
+                            ContactsContract.CommonDataKinds.Email.TYPE,
+                            ContactsContract.CommonDataKinds.Email.TYPE_HOME
+                        )
+                        .build()
+                )
+            }
+            appContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
+            true to "Saved \"$cleanName\" to ${targetOption.label}"
+        }.getOrElse { e ->
+            false to "Failed to save contact: ${e.message}"
+        }
+    }
+
+    suspend fun toggleStarred(contactId: Long, starred: Boolean): Boolean = withContext(Dispatchers.IO) {
+        if (contactId < 0 || !PermissionHelper.hasWriteContactsPermission(appContext)) return@withContext false
+        runCatching {
+            val values = ContentValues().apply {
+                put(ContactsContract.Contacts.STARRED, if (starred) 1 else 0)
+            }
+            val uri = ContactsContract.Contacts.CONTENT_URI.buildUpon()
+                .appendPath(contactId.toString())
+                .build()
+            appContext.contentResolver.update(uri, values, null, null) > 0
+        }.getOrDefault(false)
+    }
+
+    suspend fun deleteContacts(contactIds: Collection<Long>): Int = withContext(Dispatchers.IO) {
+        if (contactIds.isEmpty() || !PermissionHelper.hasWriteContactsPermission(appContext)) return@withContext 0
+        var deleted = 0
+        for (id in contactIds) {
+            if (id < 0) continue
+            deleted += deleteProviderContactById(id)
+        }
+        deleted
+    }
+
+    suspend fun deleteContactsWithItems(items: List<ContactItem>): Int = withContext(Dispatchers.IO) {
+        if (items.isEmpty() || !PermissionHelper.hasWriteContactsPermission(appContext)) return@withContext 0
+        var deleted = 0
+        for (item in items) {
+            var itemDeleted = false
+            if (item.storageType == ContactStorageType.SIM_CARD || item.simSlotIndex >= 0 || item.id < 0) {
+                val slot = item.simSlotIndex.coerceAtLeast(0)
+                if (deleteSimAdnContact(item.displayName, item.phoneNumbers, slot)) {
+                    itemDeleted = true
+                }
+            }
+            if (item.id >= 0) {
+                if (deleteProviderContactById(item.id, item.lookupKey) > 0) {
+                    itemDeleted = true
+                }
+            }
+            if (itemDeleted) deleted++
+        }
+        deleted
+    }
+
+    private fun deleteProviderContactById(contactId: Long, lookupKey: String = ""): Int {
+        val rawRemoved = runCatching {
+            appContext.contentResolver.delete(
+                ContactsContract.RawContacts.CONTENT_URI,
+                "${ContactsContract.RawContacts.CONTACT_ID} = ?",
+                arrayOf(contactId.toString())
+            )
+        }.getOrDefault(0)
+        if (rawRemoved > 0) return rawRemoved
+
+        if (lookupKey.isNotBlank()) {
+            val lookupRemoved = runCatching {
+                val lookupUri = ContactsContract.Contacts.getLookupUri(contactId, lookupKey)
+                    ?: return@runCatching 0
+                appContext.contentResolver.delete(lookupUri, null, null)
+            }.getOrDefault(0)
+            if (lookupRemoved > 0) return lookupRemoved
+        }
+
+        return runCatching {
+            val contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId)
+            appContext.contentResolver.delete(contactUri, null, null)
+        }.getOrDefault(0)
+    }
+
+    suspend fun loadTargetContactsForAccount(
+        allContacts: List<ContactItem>,
+        targetOption: ContactAccountOption
+    ): List<SelectableTargetContact> = withContext(Dispatchers.IO) {
+        allContacts.filter { c ->
+            when (targetOption.storageType) {
+                ContactStorageType.SIM_CARD ->
+                    c.storageType == ContactStorageType.SIM_CARD &&
+                        (targetOption.simSlotIndex < 0 || c.simSlotIndex == targetOption.simSlotIndex)
+                ContactStorageType.GOOGLE_ACCOUNT ->
+                    c.storageType == ContactStorageType.GOOGLE_ACCOUNT &&
+                        (targetOption.accountName.isNullOrBlank() ||
+                            c.accountName.equals(targetOption.accountName, ignoreCase = true))
+                ContactStorageType.PHONE_ONLY ->
+                    c.storageType == ContactStorageType.PHONE_ONLY
+                ContactStorageType.OTHER_ACCOUNT ->
+                    c.storageType == ContactStorageType.OTHER_ACCOUNT
+            }
+        }.map { c ->
+            SelectableTargetContact(
+                recordKey = "rec_${c.id}_${c.primaryNumber}",
+                contactId = c.id,
+                displayName = c.displayName,
+                phoneNumber = c.primaryNumber,
+                simSlotIndex = c.simSlotIndex
+            )
+        }
+    }
+
+    suspend fun deleteSelectableTargetContacts(
+        records: List<SelectableTargetContact>
+    ): Pair<Int, String> = withContext(Dispatchers.IO) {
+        var removed = 0
+        for (rec in records) {
+            var entryRemoved = false
+            if (rec.simSlotIndex >= 0 || rec.contactId < 0) {
+                val numbers = listOf(rec.phoneNumber).filter { it.isNotBlank() }
+                if (deleteSimAdnContact(rec.displayName, numbers, rec.simSlotIndex.coerceAtLeast(0))) {
+                    entryRemoved = true
+                }
+            }
+            if (rec.contactId > 0 && PermissionHelper.hasWriteContactsPermission(appContext)) {
+                if (deleteProviderContactById(rec.contactId) > 0) {
+                    entryRemoved = true
+                }
+            }
+            if (entryRemoved) removed++
+        }
+        removed to "Deleted $removed contact(s)"
+    }
+
+    suspend fun copyOrMoveContacts(
+        contactsToTransfer: List<ContactItem>,
+        targetOption: ContactAccountOption,
+        moveInsteadOfCopy: Boolean
+    ): Pair<Int, String> = withContext(Dispatchers.IO) {
+        var successCount = 0
+        val itemsToDelete = mutableListOf<ContactItem>()
+
+        for (contact in contactsToTransfer) {
+            val number = contact.primaryNumber
+            if (number.isBlank()) continue
+            val (ok, _) = createContact(contact.displayName, number, targetOption)
+            if (ok) {
+                successCount++
+                if (moveInsteadOfCopy) {
+                    itemsToDelete.add(contact)
+                }
+            }
+        }
+
+        if (moveInsteadOfCopy && itemsToDelete.isNotEmpty()) {
+            deleteContactsWithItems(itemsToDelete)
+        }
+
+        val verb = if (moveInsteadOfCopy) "Moved" else "Copied"
+        successCount to "$verb $successCount contact(s) to ${targetOption.label}"
+    }
+
+    suspend fun mergeDuplicateGroup(group: DuplicateContactGroup): Pair<Boolean, String> =
+        withContext(Dispatchers.IO) {
+            if (group.contacts.size < 2) return@withContext false to "Nothing to merge"
+            if (!PermissionHelper.hasWriteContactsPermission(appContext)) {
+                return@withContext false to "Write Contacts permission required"
+            }
+
+            val primary = group.contacts.first()
+            val allNumbers = LinkedHashSet<String>()
+            val seenNorms = HashSet<String>()
+
+            for (c in group.contacts) {
+                for (n in c.phoneNumbers) {
+                    val norm = BlocklistRepository.normalizePhoneNumber(n)
+                    if (norm.isNotBlank() && seenNorms.add(norm)) {
+                        allNumbers.add(n)
+                    }
+                }
+            }
+
+            val targetOpt = ContactAccountOption(
+                label = primary.storageType.badgeLabel,
+                subtitle = "",
+                accountName = primary.accountName.ifBlank { null },
+                accountType = primary.accountType.ifBlank { null },
+                storageType = primary.storageType,
+                simSlotIndex = primary.simSlotIndex
+            )
+
+            return@withContext runCatching {
+                val ops = ArrayList<ContentProviderOperation>()
+                ops.add(
+                    ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                        .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, targetOpt.accountType)
+                        .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, targetOpt.accountName)
+                        .build()
+                )
+                ops.add(
+                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(
+                            ContactsContract.Data.MIMETYPE,
+                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
+                        )
+                        .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, primary.displayName)
+                        .build()
+                )
+                for (phone in allNumbers) {
+                    ops.add(
+                        ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                            .withValue(
+                                ContactsContract.Data.MIMETYPE,
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE
+                            )
+                            .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phone)
+                            .withValue(
+                                ContactsContract.CommonDataKinds.Phone.TYPE,
+                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE
+                            )
+                            .build()
+                    )
+                }
+                appContext.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
+                deleteContacts(group.contacts.map { it.id })
+                true to "Merged ${group.contacts.size} duplicates into \"${primary.displayName}\""
+            }.getOrElse { e ->
+                false to "Merge failed: ${e.message}"
+            }
+        }
+
+    fun exportContactsToVCardUri(contacts: List<ContactItem>): Uri? {
+        if (contacts.isEmpty()) return null
+        return runCatching {
+            val sb = StringBuilder()
+            for (c in contacts) {
+                sb.appendLine("BEGIN:VCARD")
+                sb.appendLine("VERSION:3.0")
+                sb.appendLine("FN:${c.displayName}")
+                for (num in c.phoneNumbers) {
+                    sb.appendLine("TEL;TYPE=CELL:$num")
+                }
+                sb.appendLine("END:VCARD")
+            }
+            val dir = File(appContext.cacheDir, "vcards").apply { mkdirs() }
+            val file = File(dir, "contacts_export_${System.currentTimeMillis()}.vcf")
+            file.writeText(sb.toString())
+            FileProvider.getUriForFile(
+                appContext,
+                "${appContext.packageName}.fileprovider",
+                file
+            )
+        }.getOrNull()
+    }
+
+    private fun insertSimAdnContact(name: String, number: String, slotIndex: Int): Boolean {
+        val simAccounts = SimAccountHelper.getAvailableSimAccounts(appContext)
+        val subId = simAccounts.firstOrNull { it.slotIndex == slotIndex }?.subscriptionId ?: (slotIndex + 1)
+        val uris = listOf(
+            Uri.parse("content://icc/adn/subId/$subId"),
+            Uri.parse("content://icc/adn")
+        )
+        for (uri in uris) {
+            val inserted = runCatching {
+                val values = ContentValues().apply {
+                    put("tag", name.take(14))
+                    put("number", number)
+                }
+                appContext.contentResolver.insert(uri, values) != null
+            }.getOrDefault(false)
+            if (inserted) return true
+        }
+        return false
+    }
+
+    private fun deleteSimAdnContact(
+        name: String,
+        numbers: List<String>,
+        slotIndex: Int
+    ): Boolean {
+        val simAccounts = SimAccountHelper.getAvailableSimAccounts(appContext)
+        val matchedSubId = simAccounts.firstOrNull { it.slotIndex == slotIndex }?.subscriptionId
+        val subIdsToTry = listOfNotNull(matchedSubId, slotIndex + 1, 1, 2).distinct()
+        val normTargets = numbers.map { BlocklistRepository.normalizePhoneNumber(it) }.filter { it.isNotBlank() }.toSet()
+        val cleanName = name.trim()
+
+        var anyDeleted = false
+
+        // 1. Android 12+ (API 31+) SimPhonebookContract official ADN delete
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            for (subId in subIdsToTry) {
+                runCatching {
+                    val contentUri = SimPhonebookContract.SimRecords.getContentUri(
+                        subId,
+                        SimPhonebookContract.ElementaryFiles.EF_ADN
+                    )
+                    appContext.contentResolver.query(
+                        contentUri,
+                        arrayOf(
+                            SimPhonebookContract.SimRecords.RECORD_NUMBER,
+                            SimPhonebookContract.SimRecords.NAME,
+                            SimPhonebookContract.SimRecords.PHONE_NUMBER
+                        ),
+                        null,
+                        null,
+                        null
+                    )?.use { c ->
+                        while (c.moveToNext()) {
+                            val recNum = c.getInt(0)
+                            val rowName = c.getString(1).orEmpty().trim()
+                            val rowPhone = c.getString(2).orEmpty().trim()
+                            val rowNorm = BlocklistRepository.normalizePhoneNumber(rowPhone)
+                            val numberMatches = rowNorm.isNotBlank() && normTargets.any {
+                                it == rowNorm || (it.length >= 7 && rowNorm.endsWith(it.takeLast(7)))
+                            }
+                            val nameMatches = cleanName.isNotBlank() && (
+                                rowName.equals(cleanName, ignoreCase = true) ||
+                                    rowName.equals(cleanName.take(14), ignoreCase = true)
+                                )
+                            if (numberMatches || (normTargets.isEmpty() && nameMatches)) {
+                                val itemUri = SimPhonebookContract.SimRecords.getItemUri(
+                                    subId,
+                                    SimPhonebookContract.ElementaryFiles.EF_ADN,
+                                    recNum
+                                )
+                                if (appContext.contentResolver.delete(itemUri, null, null) > 0) {
+                                    anyDeleted = true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Classic IccProvider URIs: query first to obtain exact SIM tag/name/number/_id then delete
+        val iccUris = buildList {
+            for (subId in subIdsToTry) {
+                add(Uri.parse("content://icc/adn/subId/$subId"))
+            }
+            add(Uri.parse("content://icc/adn${slotIndex + 1}"))
+            add(Uri.parse("content://icc/adn"))
+        }.distinct()
+
+        for (uri in iccUris) {
+            // Query exact rows stored on SIM so truncated/padded names & formatted numbers match cleanly
+            val matchedRows = mutableListOf<Triple<String, String, Long>>()
+            runCatching {
+                appContext.contentResolver.query(uri, null, null, null, null)?.use { c ->
+                    val idIdx = c.getColumnIndex("_id")
+                    val tagIdx = c.getColumnIndex("tag").takeIf { it >= 0 } ?: c.getColumnIndex("name")
+                    val numIdx = c.getColumnIndex("number")
+                    while (c.moveToNext()) {
+                        val rowId = if (idIdx >= 0) c.getLong(idIdx) else -1L
+                        val rowTag = if (tagIdx >= 0) c.getString(tagIdx).orEmpty() else ""
+                        val rowNum = if (numIdx >= 0) c.getString(numIdx).orEmpty() else ""
+                        val rowNorm = BlocklistRepository.normalizePhoneNumber(rowNum)
+                        val numberMatches = rowNorm.isNotBlank() && normTargets.any {
+                            it == rowNorm || (it.length >= 7 && rowNorm.endsWith(it.takeLast(7)))
+                        }
+                        val nameMatches = cleanName.isNotBlank() && (
+                            rowTag.trim().equals(cleanName, ignoreCase = true) ||
+                                rowTag.trim().equals(cleanName.take(14), ignoreCase = true)
+                            )
+                        if (numberMatches || (normTargets.isEmpty() && nameMatches)) {
+                            matchedRows.add(Triple(rowTag, rowNum, rowId))
+                        }
+                    }
+                }
+            }
+
+            for ((rowTag, rowNum, rowId) in matchedRows) {
+                val safeTag = rowTag.replace("'", "''")
+                val safeNum = rowNum.replace("'", "''")
+                val deletedByTag = runCatching {
+                    appContext.contentResolver.delete(uri, "tag='$safeTag' AND number='$safeNum'", null)
+                }.getOrDefault(0)
+                if (deletedByTag > 0) {
+                    anyDeleted = true
+                    continue
+                }
+                val deletedByName = runCatching {
+                    appContext.contentResolver.delete(uri, "name='$safeTag' AND number='$safeNum'", null)
+                }.getOrDefault(0)
+                if (deletedByName > 0) {
+                    anyDeleted = true
+                    continue
+                }
+                if (rowId >= 0) {
+                    val deletedById = runCatching {
+                        appContext.contentResolver.delete(ContentUris.withAppendedId(uri, rowId), null, null)
+                    }.getOrDefault(0)
+                    if (deletedById > 0) {
+                        anyDeleted = true
+                    }
+                }
+            }
+
+            // Direct blind delete fallback in case SIM provider blocks query or uses exact parameters
+            val candidates = (numbers + numbers.map { BlocklistRepository.normalizePhoneNumber(it) })
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+                .distinct()
+            val nameCandidates = listOf(cleanName, cleanName.take(14)).filter { it.isNotBlank() }.distinct()
+            for (nCand in nameCandidates) {
+                val safeTag = nCand.replace("'", "''")
+                for (numCand in candidates) {
+                    val safeNum = numCand.replace("'", "''")
+                    val cnt = runCatching {
+                        appContext.contentResolver.delete(uri, "tag='$safeTag' AND number='$safeNum'", null)
+                    }.getOrDefault(0)
+                    if (cnt > 0) anyDeleted = true
+                }
+            }
+        }
+
+        return anyDeleted
+    }
+
+    private fun classifyAccount(accountName: String, accountType: String): Pair<ContactStorageType, Int> {
+        val lowerType = accountType.lowercase()
+        val lowerName = accountName.lowercase()
+        return when {
+            lowerType.contains("sim") || lowerType.contains("icc") || lowerType.contains("usim") ||
+                lowerName.contains("sim") -> {
+                val slot = if (lowerName.contains("2") || lowerType.contains("2")) 1 else 0
+                ContactStorageType.SIM_CARD to slot
+            }
+            lowerType.contains("com.google") -> ContactStorageType.GOOGLE_ACCOUNT to -1
+            lowerType.isBlank() || lowerType.contains("phone") || lowerType.contains("local") ||
+                lowerType.contains("device") -> ContactStorageType.PHONE_ONLY to -1
+            else -> ContactStorageType.OTHER_ACCOUNT to -1
+        }
+    }
+
+    private class MutableContactBuilder(
+        val id: Long,
+        val lookupKey: String,
+        val displayName: String,
+        val photoUri: String,
+        val isStarred: Boolean,
+        val accountName: String,
+        val accountType: String,
+        val storageType: ContactStorageType,
+        val simSlotIndex: Int,
+        val numbers: MutableList<String> = ArrayList()
+    ) {
+        fun build(): ContactItem = ContactItem(
+            id = id,
+            lookupKey = lookupKey,
+            displayName = displayName,
+            phoneNumbers = numbers,
+            photoUri = photoUri,
+            isStarred = isStarred,
+            accountName = accountName,
+            accountType = accountType,
+            storageType = storageType,
+            simSlotIndex = simSlotIndex
+        )
     }
-
-    private fun classifyRawAccount(accType: String, accName: String): ContactsRepository$ClassifiedRawAccount {
-        // Strings: " ", "toLowerCase(...)", "google", "sim", "icc", "adn", "usim", "ruim", "whatsapp", "telegram", "viber", "signal", "imo", "messenger", "facebook", "skype"
-        // Fields: Locale.ROOT, ContactStorageType.GOOGLE_ACCOUNT, ContactStorageType.SIM_CARD, ContactStorageType.PHONE_ONLY
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> String.toLowerCase()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> StringsKt.contains()
-        // -> StringsKt.contains$default()
-        // -> StringsKt.isBlank()
-        // -> ContactsRepository$ClassifiedRawAccount.<init>()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> StringsKt.endsWith$default()
-        TODO("Decoded 322 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun copyOrMoveContacts$default(p0: ContactsRepository, p1: Context, p2: ContactAccountOption, p3: ContactAccountOption, p4: Boolean, p5: Set<*>, p6: Int, p7: Any): Pair {
-        // -> ContactsRepository.copyOrMoveContacts()
-        TODO("Decoded 14 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun deleteSimRecordsForContact(context: Context, contact: ContactItem): Boolean {
-        // Strings: "android.permission.READ_PHONE_STATE", "parse(...)", "telephony_subscription_service", "content://icc/adn/subId/", "content://icc/adn", "content://icc/pbr", "name", "tag", "number", "_id", "'", "tag='", "' AND number='", "name='", "number='", "_id='"
-        // Fields: ContactsRepository.INSTANCE, PermissionHelper.INSTANCE, Result.Companion, Unit.INSTANCE, PrivilegeHelper.INSTANCE
-        // -> ContactItem.getPhoneNumbers()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> ArrayList.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContactsRepository.normalizePhoneForMerge()
-        // -> Collection.add()
-        // -> CharSequence.length()
-        // -> CollectionsKt.toSet()
-        // -> PermissionHelper.hasPermission()
-        // -> Context.getSystemService()
-        // -> SubscriptionManager.getActiveSubscriptionInfoList()
-        // -> CollectionsKt.emptyList()
-        // -> ContactsRepository$deleteSimRecordsForContact$lambda$41$$inlined$sortedByDescending$1.<init>()
-        // -> CollectionsKt.sortedWith()
-        // -> SubscriptionInfo.getSubscriptionId()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 780 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun deleteSourceRecord(context: Context, record: ContactsRepository$SourceContactRecord) {
-        // Strings: "' AND number='", "caller_is_syncadapter", "true", "withAppendedId(...)", "'", "tag='", "name='", "number='", "_id='", "toString(...)"
-        // Fields: ContactsContract$RawContacts.CONTENT_URI, Result.Companion, PrivilegeHelper.INSTANCE
-        // -> ContactsRepository$SourceContactRecord.getRawContactId()
-        // -> Uri.buildUpon()
-        // -> Uri$Builder.appendQueryParameter()
-        // -> Uri$Builder.build()
-        // -> Context.getContentResolver()
-        // -> Long.longValue()
-        // -> ContentUris.withAppendedId()
-        // -> ContentResolver.delete()
-        // -> Integer.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        // -> Number.intValue()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> ContactsRepository$SourceContactRecord.getSimUri()
-        // -> ContactsRepository$SourceContactRecord.getDisplayName()
-        // -> StringsKt.replace$default()
-        // -> ContactsRepository$SourceContactRecord.getPhoneNumbers()
-        // -> CollectionsKt.firstOrNull()
-        // -> CollectionsKt.createListBuilder()
-    }
-
-    private fun findDuplicateContactGroups$find(parent: IntArray, i: Int): Int {
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun findDuplicateContactGroups$lambda$73$lambda$72(it: ContactItem): CharSequence {
-        // Strings: "it"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ContactItem.getId()
-        // -> String.valueOf()
-        TODO("Decoded 8 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun findDuplicateContactGroups$union(parent: IntArray, a: Int, b: Int) {
-        // -> ContactsRepository.findDuplicateContactGroups$find()
-    }
-
-    private fun loadRecordsForTarget(context: Context, target: ContactAccountOption): List<*> {
-        // Strings: "_id", "(account_type LIKE '%sim%' OR account_type LIKE '%icc%' OR account_type LIKE '%u", "com.google", "account_type=? AND account_name=? AND deleted=0", "(account_type IS NULL OR (account_type NOT LIKE '%google%' AND account_type NOT ", ",", "raw_contact_id", "mimetype", "data1", "raw_contact_id IN (", ")", "vnd.android.cursor.item/phone_v2", "vnd.android.cursor.item/name", "vnd.android.cursor.item/email_v2", "raw_", "content://icc/adn/subId/"
-        // Fields: ContactsRepository$WhenMappings.$EnumSwitchMapping$0, ContactsContract$RawContacts.CONTENT_URI, Unit.INSTANCE, ContactsContract$Data.CONTENT_URI, ContactStorageType.SIM_CARD
-        // -> ArrayList.<init>()
-        // -> ContactAccountOption.getStorageType()
-        // -> ContactStorageType.ordinal()
-        // -> NoWhenBranchMatchedException.<init>()
-        // -> TuplesKt.to()
-        // -> ContactAccountOption.getAccountType()
-        // -> ContactAccountOption.getAccountName()
-        // -> Pair.component1()
-        // -> Pair.component2()
-        // -> Context.getContentResolver()
-        // -> ContentResolver.query()
-        // -> Cursor.moveToNext()
-        // -> Cursor.getLong()
-        // -> Long.valueOf()
-        // -> List.add()
-        // -> CloseableKt.closeFinally()
-        // -> Collection.isEmpty()
-        // -> CollectionsKt.joinToString$default()
-        // -> HashMap.<init>()
-        // -> StringBuilder.<init>()
-        TODO("Decoded 669 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun normalizePhoneForMerge(number: String): String {
-        // -> StringBuilder.<init>()
-        // -> CharSequence.length()
-        // -> CharSequence.charAt()
-        // -> Character.isDigit()
-        // -> Appendable.append()
-        // -> StringBuilder.toString()
-        // -> String.length()
-        // -> StringsKt.takeLast()
-        TODO("Decoded 37 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun saveContactMultiNumber(context: Context, name: String, phoneNumbers: List<*>, email: String, target: ContactAccountOption): Pair {
-        // Strings: "data1", "mimetype", "raw_contact_id", "No number", "account_type", "account_name", "vnd.android.cursor.item/name", "data2", "vnd.android.cursor.item/phone_v2", "vnd.android.cursor.item/email_v2", "com.android.contacts", "Saved", "Save error"
-        // Fields: ContactsContract$RawContacts.CONTENT_URI, ContactsContract$Data.CONTENT_URI
-        // -> List.isEmpty()
-        // -> Boolean.valueOf()
-        // -> TuplesKt.to()
-        // -> ArrayList.<init>()
-        // -> ContentProviderOperation.newInsert()
-        // -> ContactAccountOption.getAccountType()
-        // -> ContentProviderOperation$Builder.withValue()
-        // -> ContactAccountOption.getAccountName()
-        // -> ContentProviderOperation$Builder.build()
-        // -> ArrayList.add()
-        // -> ContentProviderOperation$Builder.withValueBackReference()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> CollectionsKt.distinct()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> StringsKt.isBlank()
-        // -> Integer.valueOf()
-        // -> Context.getContentResolver()
-        TODO("Decoded 159 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun saveToSimCard(context: Context, name: String, number: String, subId: Int): Pair {
-        // Strings: "content://icc/adn/subId/", "content://icc/adn", "tag", "number", "Saved to SIM card", "Saved to SIM card via ", "SIM write blocked by carrier/OS (grant Root or Shizuku in Settings, or save to P"
-        // Fields: PrivilegeHelper.INSTANCE
-        // -> CollectionsKt.createListBuilder()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> Uri.parse()
-        // -> List.add()
-        // -> CollectionsKt.build()
-        // -> List.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContentValues.<init>()
-        // -> StringsKt.take()
-        // -> ContentValues.put()
-        // -> Context.getContentResolver()
-        // -> ContentResolver.insert()
-        // -> Boolean.valueOf()
-        // -> TuplesKt.to()
-        // -> PrivilegeHelper.insertSimContactElevated()
-        // -> PrivilegeHelper$CommandResult.getSuccess()
-        // -> PrivilegeHelper$CommandResult.getMethod()
-        TODO("Decoded 91 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun shareContacts$lambda$54$lambda$53(it: ContactItem): CharSequence {
-        // Strings: "it", ": "
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ContactItem.getDisplayName()
-        // -> ContactItem.getPrimaryNumber()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 19 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun shareContacts$lambda$56(it: ContactItem): CharSequence {
-        // Strings: "it", ": "
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ContactItem.getDisplayName()
-        // -> ContactItem.getPrimaryNumber()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 19 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun copyOrMoveContacts(context: Context, fromTarget: ContactAccountOption, toTarget: ContactAccountOption, move: Boolean, selectedRecordKeys: Set<*>): Pair {
-        // Strings: "context", "fromTarget", "toTarget", "android.permission.READ_CONTACTS", "android.permission.WRITE_CONTACTS", "Source and destination cannot be the same", "move", "copy", "Select at least one contact to ", "Moved", "Copied", " (", " skipped)", " ", " contact(s) to ", "Unable to "
-        // Fields: PermissionHelper.INSTANCE, ContactStorageType.SIM_CARD, ContactsRepository.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PermissionHelper.hasPermission()
-        // -> Boolean.valueOf()
-        // -> ContactAccountOption.getStorageType()
-        // -> ContactAccountOption.getAccountName()
-        // -> Intrinsics.areEqual()
-        // -> ContactAccountOption.getSimSubscriptionId()
-        // -> TuplesKt.to()
-        // -> ContactsRepository.loadRecordsForTarget()
-        // -> ArrayList.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContactsRepository$SourceContactRecord.getRecordKey()
-        // -> Set.contains()
-        // -> Collection.add()
-        // -> List.isEmpty()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 274 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun countContactsForTarget(context: Context, target: ContactAccountOption): Int {
-        // Strings: "context", "target"
-        // Fields: PermissionHelper.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PermissionHelper.hasContactsPermission()
-        // -> ContactsRepository.loadRecordsForTarget()
-        // -> List.size()
-        TODO("Decoded 15 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun deleteContactItems(context: Context, contacts: List<*>): Int {
-        // Strings: "context", "contacts", "android.permission.WRITE_CONTACTS", "SIM:", "caller_is_syncadapter", "true", "contact_id=?", "withAppendedId(...)"
-        // Fields: PermissionHelper.INSTANCE, ContactStorageType.SIM_CARD, ContactsRepository.INSTANCE, Result.Companion, ContactsContract$RawContacts.CONTENT_URI, Unit.INSTANCE, ContactsContract$Contacts.CONTENT_URI
-        // -> Intrinsics.checkNotNullParameter()
-        // -> List.isEmpty()
-        // -> PermissionHelper.hasPermission()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContactItem.getStorageType()
-        // -> ContactItem.getFilterKeys()
-        // -> Collection.isEmpty()
-        // -> StringsKt.startsWith$default()
-        // -> ContactItem.getId()
-        // -> ContactsRepository.deleteSimRecordsForContact()
-        // -> Uri.buildUpon()
-        // -> Uri$Builder.appendQueryParameter()
-        // -> Uri$Builder.build()
-        // -> Context.getContentResolver()
-        // -> String.valueOf()
-        // -> ContentResolver.delete()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        TODO("Decoded 182 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun deleteContacts(context: Context, contactIds: List<*>): Int {
-        // Strings: "context", "contactIds"
-        // Fields: PermissionHelper.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> List.isEmpty()
-        // -> PermissionHelper.hasContactsPermission()
-        // -> ContactsRepository.loadContacts()
-        // -> CollectionsKt.emptyList()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> MapsKt.mapCapacity()
-        // -> RangesKt.coerceAtLeast()
-        // -> LinkedHashMap.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContactItem.getId()
-        // -> Long.valueOf()
-        // -> Map.put()
-        // -> ArrayList.<init>()
-        // -> Number.longValue()
-        // -> Map.get()
-        // -> ContactItem.<init>()
-        // -> Collection.add()
-        TODO("Decoded 115 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun findDuplicateContactGroups(contacts: List<*>): List<*> {
-        // Strings: "contacts", "toLowerCase(...)", "unnamed", "<get-values>(...)", "Same Name & Number", "Duplicate Name", "Shared Phone Number", "_"
-        // Fields: Locale.ROOT, ContactsRepository.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> List.size()
-        // -> CollectionsKt.emptyList()
-        // -> LinkedHashSet.<init>()
-        // -> HashMap.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> CollectionsKt.throwIndexOverflow()
-        // -> ContactItem.getDisplayName()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> String.toLowerCase()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> StringsKt.isBlank()
-        // -> Intrinsics.areEqual()
-        // -> Map.get()
-        // -> ArrayList.<init>()
-        // -> Map.put()
-        // -> Integer.valueOf()
-        TODO("Decoded 553 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAvailableSaveTargets(context: Context): List<*> {
-        // Strings: ")", "context", "Phone Only (Device Storage)", "com.google", "getAccountsByType(...)", "Google (", "android.permission.READ_PHONE_STATE", "telephony_subscription_service", "SIM", "SIM ", " (", "SIM Card (Default Slot)"
-        // Fields: ContactStorageType.PHONE_ONLY, ContactStorageType.GOOGLE_ACCOUNT, Account.name, Account.type, SimAccountHelper.INSTANCE, PermissionHelper.INSTANCE, ContactStorageType.SIM_CARD
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ArrayList.<init>()
-        // -> ContactAccountOption.<init>()
-        // -> List.add()
-        // -> AccountManager.get()
-        // -> AccountManager.getAccountsByType()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> SimAccountHelper.getSimAccounts()
-        // -> PermissionHelper.hasPermission()
-        // -> Context.getSystemService()
-        // -> SubscriptionManager.getActiveSubscriptionInfoList()
-        // -> CollectionsKt.emptyList()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> SubscriptionInfo.getDisplayName()
-        // -> Object.toString()
-        TODO("Decoded 285 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSelectableContactsForTarget(context: Context, target: ContactAccountOption): List<*> {
-        // Strings: "context", "target"
-        // Fields: PermissionHelper.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PermissionHelper.hasContactsPermission()
-        // -> CollectionsKt.emptyList()
-        // -> ContactsRepository.loadRecordsForTarget()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> ArrayList.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContactsRepository$SourceContactRecord.getRecordKey()
-        // -> ContactsRepository$SourceContactRecord.getDisplayName()
-        // -> ContactsRepository$SourceContactRecord.getPhoneNumbers()
-        // -> ContactsRepository$SourceContactRecord.getEmail()
-        // -> SelectableTargetContact.<init>()
-        // -> Collection.add()
-        TODO("Decoded 52 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun loadContacts(context: Context): List<*> {
-        // Strings: "SIM ", "account_name", "account_type", "contact_id", "context", "deleted=0", "lookup", "display_name", "data1", "photo_uri", "starred", "display_name COLLATE NOCASE ASC", "Unnamed", "DEVICE", "THIRD_PARTY:", "<get-values>(...)"
-        // Fields: PermissionHelper.INSTANCE, SimAccountHelper.INSTANCE, ContactsContract$RawContacts.CONTENT_URI, ContactsRepository.INSTANCE, Unit.INSTANCE, ContactsContract$CommonDataKinds$Phone.CONTENT_URI, ContactStorageType.GOOGLE_ACCOUNT, ContactStorageType.SIM_CARD
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PermissionHelper.hasContactsPermission()
-        // -> CollectionsKt.emptyList()
-        // -> LinkedHashMap.<init>()
-        // -> SimAccountHelper.getSimAccounts()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> MapsKt.mapCapacity()
-        // -> RangesKt.coerceAtLeast()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> SimAccountInfo.getSlotIndex()
-        // -> Integer.valueOf()
-        // -> SimAccountInfo.getIconTintColor()
-        // -> TuplesKt.to()
-        // -> Pair.getFirst()
-        // -> Pair.getSecond()
-        // -> Map.put()
-        // -> HashMap.<init>()
-        // -> Context.getContentResolver()
-        TODO("Decoded 1351 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun mergeContacts(context: Context, contactsToMerge: List<*>): Pair {
-        // Strings: ",", "vnd.android.cursor.item/email_v2", "data1", "context", "contactsToMerge", "Select at least 2 contacts to merge", "android.permission.WRITE_CONTACTS", "Contacts write permission required", "contact_id IN (", ") AND deleted=0", "_id", "contact_id", "<get-values>(...)", "raw_contact_id=? AND mimetype=?", "toLowerCase(...)", "data2"
-        // Fields: PermissionHelper.INSTANCE, ContactsContract$RawContacts.CONTENT_URI, Unit.INSTANCE, ContactsRepository.INSTANCE, ContactsContract$Data.CONTENT_URI, Locale.ROOT, ContactsContract$AggregationExceptions.CONTENT_URI
-        // -> Intrinsics.checkNotNullParameter()
-        // -> List.size()
-        // -> Boolean.valueOf()
-        // -> TuplesKt.to()
-        // -> PermissionHelper.hasPermission()
-        // -> ContactsRepository$mergeContacts$$inlined$sortedByDescending$1.<init>()
-        // -> CollectionsKt.sortedWith()
-        // -> CollectionsKt.collectionSizeOrDefault()
-        // -> ArrayList.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> ContactItem.getId()
-        // -> Long.valueOf()
-        // -> Collection.add()
-        // -> CollectionsKt.distinct()
-        // -> LinkedHashMap.<init>()
-        // -> CollectionsKt.joinToString$default()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        TODO("Decoded 711 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun saveContact(context: Context, name: String, phoneNumber: String, email: String, target: ContactAccountOption): Pair {
-        // Strings: "data2", "data1", "mimetype", "raw_contact_id", "context", "name", "phoneNumber", "target", "android.permission.WRITE_CONTACTS", "Contacts write permission required", "account_type", "account_name", "vnd.android.cursor.item/name", "vnd.android.cursor.item/phone_v2", "vnd.android.cursor.item/email_v2", "com.android.contacts"
-        // Fields: ContactStorageType.SIM_CARD, PermissionHelper.INSTANCE, ContactsContract$RawContacts.CONTENT_URI, ContactsContract$Data.CONTENT_URI
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.isBlank()
-        // -> Boolean.valueOf()
-        // -> ContactAccountOption.getStorageType()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> ContactAccountOption.getSimSubscriptionId()
-        // -> ContactsRepository.saveToSimCard()
-        // -> PermissionHelper.hasPermission()
-        // -> TuplesKt.to()
-        // -> ArrayList.<init>()
-        // -> ContentProviderOperation.newInsert()
-        // -> ContactAccountOption.getAccountType()
-        // -> ContentProviderOperation$Builder.withValue()
-        // -> ContactAccountOption.getAccountName()
-        // -> ContentProviderOperation$Builder.build()
-        // -> ArrayList.add()
-        // -> ContentProviderOperation$Builder.withValueBackReference()
-        // -> Integer.valueOf()
-        // -> Context.getContentResolver()
-        TODO("Decoded 191 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun shareContacts(context: Context, contacts: List<*>) {
-        // Strings: "\n", "Share Contact", "android.intent.extra.TEXT", "android.intent.action.SEND", "\n", "context", "contacts", "BEGIN:VCARD\n", "VERSION:3.0\n", "FN:", "TEL;TYPE=CELL:", "END:VCARD\n", "vcards", ".vcf", "[^a-zA-Z0-9_-]", "_"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> List.isEmpty()
-        // -> StringBuilder.<init>()
-        // -> Iterable.iterator()
-        // -> Iterator.hasNext()
-        // -> Iterator.next()
-        // -> StringBuilder.append()
-        // -> ContactItem.getDisplayName()
-        // -> StringBuilder.toString()
-        // -> ContactItem.getPhoneNumbers()
-        // -> Context.getCacheDir()
-        // -> File.<init>()
-        // -> File.mkdirs()
-        // -> List.size()
-        // -> CollectionsKt.first()
-        // -> Regex.<init>()
-        // -> Regex.replace()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> FilesKt.writeText$default()
-        // -> Context.getPackageName()
-    }
-
-    fun toggleFavorite(context: Context, contactId: Long, starred: Boolean): Boolean {
-        // Strings: "context", "android.permission.WRITE_CONTACTS", "starred", "withAppendedId(...)"
-        // Fields: PermissionHelper.INSTANCE, ContactsContract$Contacts.CONTENT_URI
-        // -> Intrinsics.checkNotNullParameter()
-        // -> PermissionHelper.hasPermission()
-        // -> ContentValues.<init>()
-        // -> Integer.valueOf()
-        // -> ContentValues.put()
-        // -> ContentUris.withAppendedId()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> Context.getContentResolver()
-        // -> ContentResolver.update()
-        TODO("Decoded 41 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class ContactsRepository$ClassifiedRawAccount {
-    val accountLabel: String
-    val accountName: String
-    val accountType: String
-    val filterKey: String
-    val simSlotNumber: Int
-    val storageType: ContactStorageType
-
-    constructor(storageType: ContactStorageType, accountType: String, accountName: String, simSlotNumber: Int, accountLabel: String, filterKey: String) {
-        // Strings: "storageType", "accountLabel", "filterKey"
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType, ContactsRepository$ClassifiedRawAccount.accountType, ContactsRepository$ClassifiedRawAccount.accountName, ContactsRepository$ClassifiedRawAccount.simSlotNumber, ContactsRepository$ClassifiedRawAccount.accountLabel, ContactsRepository$ClassifiedRawAccount.filterKey
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Object.<init>()
-    }
-
-    fun copy$default(p0: ContactsRepository$ClassifiedRawAccount, p1: ContactStorageType, p2: String, p3: String, p4: Int, p5: String, p6: String, p7: Int, p8: Any): ContactsRepository$ClassifiedRawAccount {
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType, ContactsRepository$ClassifiedRawAccount.accountType, ContactsRepository$ClassifiedRawAccount.accountName, ContactsRepository$ClassifiedRawAccount.simSlotNumber, ContactsRepository$ClassifiedRawAccount.accountLabel, ContactsRepository$ClassifiedRawAccount.filterKey
-        // -> ContactsRepository$ClassifiedRawAccount.copy()
-        TODO("Decoded 28 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component1(): ContactStorageType {
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component2(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.accountType
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component3(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.accountName
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component4(): Int {
-        // Fields: ContactsRepository$ClassifiedRawAccount.simSlotNumber
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component5(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.accountLabel
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component6(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.filterKey
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun copy(p0: ContactStorageType, p1: String, p2: String, p3: Int, p4: String, p5: String): ContactsRepository$ClassifiedRawAccount {
-        // Strings: "storageType", "accountLabel", "filterKey"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ContactsRepository$ClassifiedRawAccount.<init>()
-        TODO("Decoded 15 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun equals(p0: Any): Boolean {
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType, ContactsRepository$ClassifiedRawAccount.accountType, ContactsRepository$ClassifiedRawAccount.accountName, ContactsRepository$ClassifiedRawAccount.simSlotNumber, ContactsRepository$ClassifiedRawAccount.accountLabel, ContactsRepository$ClassifiedRawAccount.filterKey
-        // -> Intrinsics.areEqual()
-        TODO("Decoded 42 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAccountLabel(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.accountLabel
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAccountName(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.accountName
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAccountType(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.accountType
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getFilterKey(): String {
-        // Fields: ContactsRepository$ClassifiedRawAccount.filterKey
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSimSlotNumber(): Int {
-        // Fields: ContactsRepository$ClassifiedRawAccount.simSlotNumber
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getStorageType(): ContactStorageType {
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun hashCode(): Int {
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType, ContactsRepository$ClassifiedRawAccount.accountType, ContactsRepository$ClassifiedRawAccount.accountName, ContactsRepository$ClassifiedRawAccount.simSlotNumber, ContactsRepository$ClassifiedRawAccount.accountLabel, ContactsRepository$ClassifiedRawAccount.filterKey
-        // -> ContactStorageType.hashCode()
-        // -> String.hashCode()
-        // -> Integer.hashCode()
-        TODO("Decoded 37 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun toString(): String {
-        // Strings: "ClassifiedRawAccount(storageType=", ", accountType=", ", accountName=", ", simSlotNumber=", ", accountLabel=", ", filterKey=", ")"
-        // Fields: ContactsRepository$ClassifiedRawAccount.storageType, ContactsRepository$ClassifiedRawAccount.accountType, ContactsRepository$ClassifiedRawAccount.accountName, ContactsRepository$ClassifiedRawAccount.simSlotNumber, ContactsRepository$ClassifiedRawAccount.accountLabel, ContactsRepository$ClassifiedRawAccount.filterKey
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 44 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class ContactsRepository$MutableContactBuilder {
-    val accountLabel: String
-    val accountName: String
-    val accountType: String
-    val displayName: String
-    val filterKeys: Set<*>
-    val id: Long
-    val isStarred: Boolean
-    val lookupKey: String
-    val numbers: List<*>
-    val photoUri: String
-    val simColorArgb: Int
-    val simSlotNumber: Int
-    val storageType: ContactStorageType
-
-    constructor(id: Long, lookupKey: String, displayName: String, photoUri: String, isStarred: Boolean, accountLabel: String, accountType: String, accountName: String, storageType: ContactStorageType, simSlotNumber: Int, simColorArgb: Int, filterKeys: Set<*>) {
-        // Strings: "lookupKey", "displayName", "accountLabel", "storageType", "filterKeys"
-        // Fields: ContactsRepository$MutableContactBuilder.id, ContactsRepository$MutableContactBuilder.lookupKey, ContactsRepository$MutableContactBuilder.displayName, ContactsRepository$MutableContactBuilder.photoUri, ContactsRepository$MutableContactBuilder.isStarred, ContactsRepository$MutableContactBuilder.accountLabel, ContactsRepository$MutableContactBuilder.accountType, ContactsRepository$MutableContactBuilder.accountName, ContactsRepository$MutableContactBuilder.storageType, ContactsRepository$MutableContactBuilder.simSlotNumber, ContactsRepository$MutableContactBuilder.simColorArgb, ContactsRepository$MutableContactBuilder.filterKeys
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Object.<init>()
-        // -> ArrayList.<init>()
-    }
-
-    fun build(): ContactItem {
-        // Fields: ContactsRepository$MutableContactBuilder.id, ContactsRepository$MutableContactBuilder.lookupKey, ContactsRepository$MutableContactBuilder.displayName, ContactsRepository$MutableContactBuilder.numbers, ContactsRepository$MutableContactBuilder.photoUri, ContactsRepository$MutableContactBuilder.isStarred, ContactsRepository$MutableContactBuilder.accountLabel, ContactsRepository$MutableContactBuilder.accountType, ContactsRepository$MutableContactBuilder.accountName, ContactsRepository$MutableContactBuilder.storageType, ContactsRepository$MutableContactBuilder.simSlotNumber, ContactsRepository$MutableContactBuilder.simColorArgb
-        // -> CollectionsKt.toList()
-        // -> ContactItem.<init>()
-        TODO("Decoded 19 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAccountLabel(): String {
-        // Fields: ContactsRepository$MutableContactBuilder.accountLabel
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAccountName(): String {
-        // Fields: ContactsRepository$MutableContactBuilder.accountName
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getAccountType(): String {
-        // Fields: ContactsRepository$MutableContactBuilder.accountType
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDisplayName(): String {
-        // Fields: ContactsRepository$MutableContactBuilder.displayName
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getFilterKeys(): Set<*> {
-        // Fields: ContactsRepository$MutableContactBuilder.filterKeys
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getId(): Long {
-        // Fields: ContactsRepository$MutableContactBuilder.id
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLookupKey(): String {
-        // Fields: ContactsRepository$MutableContactBuilder.lookupKey
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getNumbers(): List<*> {
-        // Fields: ContactsRepository$MutableContactBuilder.numbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getPhotoUri(): String {
-        // Fields: ContactsRepository$MutableContactBuilder.photoUri
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSimColorArgb(): Int {
-        // Fields: ContactsRepository$MutableContactBuilder.simColorArgb
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSimSlotNumber(): Int {
-        // Fields: ContactsRepository$MutableContactBuilder.simSlotNumber
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getStorageType(): ContactStorageType {
-        // Fields: ContactsRepository$MutableContactBuilder.storageType
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun isStarred(): Boolean {
-        // Fields: ContactsRepository$MutableContactBuilder.isStarred
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class ContactsRepository$SourceContactRecord {
-    val displayName: String
-    val email: String
-    val phoneNumbers: List<*>
-    val rawContactId: Long
-    val recordKey: String
-    val simRowId: String
-    val simUri: Uri
-
-    constructor(recordKey: String, rawContactId: Long, simUri: Uri, simRowId: String, displayName: String, phoneNumbers: List<*>, email: String) {
-        // Strings: "recordKey", "displayName", "phoneNumbers"
-        // Fields: ContactsRepository$SourceContactRecord.recordKey, ContactsRepository$SourceContactRecord.rawContactId, ContactsRepository$SourceContactRecord.simUri, ContactsRepository$SourceContactRecord.simRowId, ContactsRepository$SourceContactRecord.displayName, ContactsRepository$SourceContactRecord.phoneNumbers, ContactsRepository$SourceContactRecord.email
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Object.<init>()
-    }
-
-    fun copy$default(p0: ContactsRepository$SourceContactRecord, p1: String, p2: Long, p3: Uri, p4: String, p5: String, p6: List<*>, p7: String, p8: Int, p9: Any): ContactsRepository$SourceContactRecord {
-        // Fields: ContactsRepository$SourceContactRecord.recordKey, ContactsRepository$SourceContactRecord.rawContactId, ContactsRepository$SourceContactRecord.simUri, ContactsRepository$SourceContactRecord.simRowId, ContactsRepository$SourceContactRecord.displayName, ContactsRepository$SourceContactRecord.phoneNumbers, ContactsRepository$SourceContactRecord.email
-        // -> ContactsRepository$SourceContactRecord.copy()
-        TODO("Decoded 32 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component1(): String {
-        // Fields: ContactsRepository$SourceContactRecord.recordKey
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component2(): Long {
-        // Fields: ContactsRepository$SourceContactRecord.rawContactId
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component3(): Uri {
-        // Fields: ContactsRepository$SourceContactRecord.simUri
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component4(): String {
-        // Fields: ContactsRepository$SourceContactRecord.simRowId
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component5(): String {
-        // Fields: ContactsRepository$SourceContactRecord.displayName
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component6(): List<*> {
-        // Fields: ContactsRepository$SourceContactRecord.phoneNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun component7(): String {
-        // Fields: ContactsRepository$SourceContactRecord.email
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun copy(p0: String, p1: Long, p2: Uri, p3: String, p4: String, p5: List<*>, p6: String): ContactsRepository$SourceContactRecord {
-        // Strings: "recordKey", "displayName", "phoneNumbers"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ContactsRepository$SourceContactRecord.<init>()
-        TODO("Decoded 16 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun equals(p0: Any): Boolean {
-        // Fields: ContactsRepository$SourceContactRecord.recordKey, ContactsRepository$SourceContactRecord.rawContactId, ContactsRepository$SourceContactRecord.simUri, ContactsRepository$SourceContactRecord.simRowId, ContactsRepository$SourceContactRecord.displayName, ContactsRepository$SourceContactRecord.phoneNumbers, ContactsRepository$SourceContactRecord.email
-        // -> Intrinsics.areEqual()
-        TODO("Decoded 52 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDisplayName(): String {
-        // Fields: ContactsRepository$SourceContactRecord.displayName
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getEmail(): String {
-        // Fields: ContactsRepository$SourceContactRecord.email
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getPhoneNumbers(): List<*> {
-        // Fields: ContactsRepository$SourceContactRecord.phoneNumbers
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getRawContactId(): Long {
-        // Fields: ContactsRepository$SourceContactRecord.rawContactId
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getRecordKey(): String {
-        // Fields: ContactsRepository$SourceContactRecord.recordKey
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSimRowId(): String {
-        // Fields: ContactsRepository$SourceContactRecord.simRowId
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSimUri(): Uri {
-        // Fields: ContactsRepository$SourceContactRecord.simUri
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun hashCode(): Int {
-        // Fields: ContactsRepository$SourceContactRecord.recordKey, ContactsRepository$SourceContactRecord.rawContactId, ContactsRepository$SourceContactRecord.simUri, ContactsRepository$SourceContactRecord.simRowId, ContactsRepository$SourceContactRecord.displayName, ContactsRepository$SourceContactRecord.phoneNumbers, ContactsRepository$SourceContactRecord.email
-        // -> String.hashCode()
-        // -> Object.hashCode()
-        // -> Uri.hashCode()
-        TODO("Decoded 50 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun toString(): String {
-        // Strings: "SourceContactRecord(recordKey=", ", rawContactId=", ", simUri=", ", simRowId=", ", displayName=", ", phoneNumbers=", ", email=", ")"
-        // Fields: ContactsRepository$SourceContactRecord.recordKey, ContactsRepository$SourceContactRecord.rawContactId, ContactsRepository$SourceContactRecord.simUri, ContactsRepository$SourceContactRecord.simRowId, ContactsRepository$SourceContactRecord.displayName, ContactsRepository$SourceContactRecord.phoneNumbers, ContactsRepository$SourceContactRecord.email
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 50 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class ContactsRepository$WhenMappings {
 }

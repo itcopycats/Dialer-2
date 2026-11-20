@@ -1,562 +1,661 @@
-// Reconstructed from APK DEX metadata & bytecode (OemCallBadges.kt)
 package com.example.ui.components
 
 import android.content.Context
-import androidx.compose.runtime.Composer
-import androidx.compose.runtime.ProduceStateScope
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.LruCache
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallMade
+import androidx.compose.material.icons.automirrored.filled.CallMissed
+import androidx.compose.material.icons.automirrored.filled.CallReceived
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhoneDisabled
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Voicemail
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.model.CallDirection
 import com.example.model.CallNetworkBadge
-import com.example.model.ContactItem
-import com.example.model.LastCallInfo
-import java.util.List
-import kotlinx.coroutines.CoroutineScope
+import com.example.model.ContactStorageType
+import com.example.ui.theme.DialerAmber
+import com.example.ui.theme.DialerBlockedRed
+import com.example.ui.theme.DialerBlue
+import com.example.ui.theme.DialerCrimson
+import com.example.ui.theme.DialerCyan
+import com.example.ui.theme.DialerEmeraldBadge
+import com.example.ui.theme.DialerEmeraldBright
+import com.example.ui.theme.DialerPurple
+import com.example.ui.theme.DialerTeal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.math.abs
 
-class OemCallBadgesKt {
-    companion object {
-        val UnknownAvatarPalette: List<*>
+private object ContactPhotoCache {
+    private val cache = LruCache<String, ImageBitmap>(120)
+
+    fun get(uri: String): ImageBitmap? = cache.get(uri)
+
+    fun put(uri: String, bmp: ImageBitmap) {
+        cache.put(uri, bmp)
     }
-
-    @Composable
-    fun BlockedNumberWarningPill(modifier: Modifier) {
-        // Strings: "C(BlockedNumberWarningPill)404@14210L717:OemCallBadges.kt#qonjpd", "com.example.ui.components.BlockedNumberWarningPill (OemCallBadges.kt:403)", "blocked_number_warning_pill", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C413@14547L170,419@14722L201:OemCallBadges.kt#qonjpd", "Blocked Warning", "The number is Blocked! ⚠️"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, Icons.INSTANCE, Color.Companion, FontWeight.Companion, TextOverflow.Companion
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Dp.constructor-impl()
-        // -> Arrangement.spacedBy-0680j_4()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> ClipKt.clip()
-        // -> ColorKt.getDialerCrimson()
-        // -> Color.copy-wmQWz5c$default()
-        // -> BackgroundKt.background-bw27NRU$default()
-        // -> PaddingKt.padding-VpY3zN4()
-        // -> TestTagKt.testTag()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-    }
-
-    @Composable
-    fun BlockedNumberWarningPill$lambda$18(p0: Modifier, p1: Int, p2: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.BlockedNumberWarningPill()
-    }
-
-    @Composable
-    fun CallerAvatarCircle-yVsgpu4(displayName: String, photoUri: String, size: Float, fontSize: Long, accentColor: Long, containerColor: Long, contentColor: Long, borderColor: Color, modifier: Modifier) {
-        // Strings: "displayName", "C(CallerAvatarCircle)P(4,7,8:c#ui.unit.Dp,5:c#ui.unit.TextUnit,0:c#ui.graphics.C", "104@4427L11,105@4488L11,106@4556L11", "com.example.ui.components.CallerAvatarCircle (OemCallBadges.kt:109)", "CC:CompositionLocal.kt#9igjgp", "CC(remember):OemCallBadges.kt#9igjgp", "133@5376L153", "140@5545L2318", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C73@3429L9:Box.kt#2w3rfo", "C150@5907L1950,150@5868L1989:OemCallBadges.kt#qonjpd"
-        // Fields: MaterialTheme.INSTANCE, MaterialTheme.$stable, Modifier.Companion, Composer.Companion, ContentScale.Companion, Brush.Companion, Alignment.Companion, ComposeUiNode.Companion, BoxScopeInstance.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> Composer.startDefaults()
-        // -> Composer.getDefaultsInvalid()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getPrimary-0d7_KjU()
-        // -> ColorScheme.getPrimaryContainer-0d7_KjU()
-        // -> ColorScheme.getOnPrimaryContainer-0d7_KjU()
-        // -> Composer.endDefaults()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> AndroidCompositionLocals_androidKt.getLocalContext()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.consume()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> Composer.changedInstance()
-    }
-
-    fun CallerAvatarCircle_yVsgpu4$lambda$6$lambda$5$lambda$4($this$Canvas: DrawScope) {
-        // Strings: "$this$Canvas"
-        // Fields: Color.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> DrawScope.getSize-NH-jbRc()
-        // -> Size.getWidth-impl()
-        // -> Size.getHeight-impl()
-        // -> Color$Companion.getWhite-0d7_KjU()
-        // -> Color.copy-wmQWz5c$default()
-        // -> OffsetKt.Offset()
-        // -> DrawScope.drawCircle-VaOC9Bg$default()
-        // -> Color$Companion.getBlack-0d7_KjU()
-        // -> OemCallBadgesKt.CallerAvatarCircle_yVsgpu4$lambda$6$lambda$5$lambda$4$buildBustPath()
-        // -> DrawScope.drawPath-LG529CI$default()
-    }
-
-    private fun CallerAvatarCircle_yVsgpu4$lambda$6$lambda$5$lambda$4$buildBustPath(w: Float, h: Float, dx: Float, dy: Float): Path {
-        // -> AndroidPath_androidKt.Path()
-        // -> Path.moveTo()
-        // -> Path.cubicTo()
-        // -> Path.close()
-        TODO("Decoded 80 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun CallerAvatarCircle_yVsgpu4$lambda$7(p0: String, p1: String, p2: Float, p3: Long, p4: Long, p5: Long, p6: Long, p7: Color, p8: Modifier, p9: Int, p10: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.CallerAvatarCircle-yVsgpu4()
-    }
-
-    @Composable
-    fun ContactStorageSourceBadge-iJQMabo(contact: ContactItem, tint: Long) {
-        // Strings: "contact", "C(ContactStorageSourceBadge)P(!,1:c#ui.graphics.Color)527@18178L1200:OemCallBadg", "525@18143L11", "com.example.ui.components.ContactStorageSourceBadge (OemCallBadges.kt:526)", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C:OemCallBadges.kt#qonjpd", "552@19051L181,558@19241L119", "Device Storage", "Device", "547@18902L11,549@18940L53", "533@18382L33,534@18424L214", "Google"
-        // Fields: MaterialTheme.INSTANCE, MaterialTheme.$stable, Alignment.Companion, Arrangement.INSTANCE, Modifier.Companion, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, OemCallBadgesKt$WhenMappings.$EnumSwitchMapping$2, Icons.INSTANCE, TextOverflow.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changedInstance()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> Composer.startDefaults()
-        // -> Composer.getDefaultsInvalid()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> Composer.endDefaults()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Dp.constructor-impl()
-        // -> Arrangement.spacedBy-0680j_4()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-    }
-
-    @Composable
-    fun ContactStorageSourceBadge_iJQMabo$lambda$26(p0: ContactItem, p1: Long, p2: Int, p3: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.ContactStorageSourceBadge-iJQMabo()
-    }
-
-    @Composable
-    fun GoogleColorfulGIcon-kHDZbjc(size: Float) {
-        // Strings: "C(GoogleColorfulGIcon)P(0:c#ui.unit.Dp)571@19479L1395,571@19440L1434:OemCallBadg", "com.example.ui.components.GoogleColorfulGIcon (OemCallBadges.kt:570)", "CC(remember):OemCallBadges.kt#9igjgp"
-        // Fields: Modifier.Companion, Composer.Companion
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> Dp.constructor-impl()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.size-3ABfNKs()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> OemCallBadgesKt$$ExternalSyntheticLambda0.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> CanvasKt.Canvas()
-        // -> ComposerKt.traceEventEnd()
-        // -> Composer.endRestartGroup()
-        // -> OemCallBadgesKt$$ExternalSyntheticLambda4.<init>()
-        // -> ScopeUpdateScope.updateScope()
-    }
-
-    fun GoogleColorfulGIcon_kHDZbjc$lambda$28$lambda$27($this$Canvas: DrawScope) {
-        // Strings: "$this$Canvas"
-        // Fields: StrokeCap.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> DrawScope.getSize-NH-jbRc()
-        // -> Size.getMinDimension-impl()
-        // -> Size.getWidth-impl()
-        // -> Size.getHeight-impl()
-        // -> SizeKt.Size()
-        // -> OffsetKt.Offset()
-        // -> StrokeCap$Companion.getButt-KaPHkGw()
-        // -> Stroke.<init>()
-        // -> ColorKt.Color()
-        // -> DrawScope.drawArc-yD3GUKo$default()
-        // -> StrokeCap$Companion.getRound-KaPHkGw()
-        // -> DrawScope.drawLine-NGM6Ib0$default()
-    }
-
-    @Composable
-    fun GoogleColorfulGIcon_kHDZbjc$lambda$29(p0: Float, p1: Int, p2: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.GoogleColorfulGIcon-kHDZbjc()
-    }
-
-    @Composable
-    fun LastCallRichBanner(lastCall: LastCallInfo, modifier: Modifier) {
-        // Strings: "lastCall", "C(LastCallRichBanner)435@15050L113,438@15166L1564:OemCallBadges.kt#qonjpd", "com.example.ui.components.LastCallRichBanner (OemCallBadges.kt:434)", "CC(remember):OemCallBadges.kt#9igjgp", "incall_last_call_banner", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C73@3429L9:Box.kt#2w3rfo", "C444@15327L163,450@15495L1231:OemCallBadges.kt#qonjpd", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "C100@5047L9:Row.kt#2w3rfo", "C473@16319L110,477@16436L284:OemCallBadges.kt#qonjpd", "458@15923L102", "463@16072L222", "incall_last_call_text"
-        // Fields: Modifier.Companion, Composer.Companion, CallLogRepository.INSTANCE, Alignment.Companion, ComposeUiNode.Companion, BoxScopeInstance.INSTANCE, Color.Companion, Arrangement.INSTANCE, RowScopeInstance.INSTANCE, FontWeight.Companion, TextOverflow.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> LastCallInfo.getTimestampMillis()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> CallLogRepository.formatLastCallBannerText$default()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> ClipKt.clip()
-        // -> TestTagKt.testTag()
-        // -> Alignment$Companion.getCenter()
-    }
-
-    @Composable
-    fun LastCallRichBanner$lambda$22(p0: LastCallInfo, p1: Modifier, p2: Int, p3: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.LastCallRichBanner()
-    }
-
-    @Composable
-    fun NetworkQualityBadge-3IgeMak(badge: CallNetworkBadge, tint: Long, compact: Boolean) {
-        // Strings: "badge", "C(NetworkQualityBadge)P(!1,2:c#ui.graphics.Color):OemCallBadges.kt#qonjpd", "222@8221L11", "com.example.ui.components.NetworkQualityBadge (OemCallBadges.kt:224)", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "323@11786L183", "Voice Call", "308@11206L533", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "C87@4365L9:Column.kt#2w3rfo", "C317@11652L34,318@11695L36:OemCallBadges.kt#qonjpd", "Vo", "LTE", "274@9874L471", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo"
-        // Fields: MaterialTheme.INSTANCE, MaterialTheme.$stable, OemCallBadgesKt$WhenMappings.$EnumSwitchMapping$0, Icons.INSTANCE, Modifier.Companion, Unit.INSTANCE, FontWeight.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, ColumnScopeInstance.INSTANCE, BoxScopeInstance.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Enum.ordinal()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> Composer.startDefaults()
-        // -> Composer.getDefaultsInvalid()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> Composer.endDefaults()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> CallNetworkBadge.ordinal()
-        // -> Composer.startReplaceGroup()
-        // -> Composer.endReplaceGroup()
-        // -> NoWhenBranchMatchedException.<init>()
-        // -> Icons.getDefault()
-        // -> CallKt.getCall()
-    }
-
-    fun NetworkQualityBadge_3IgeMak$lambda$10$lambda$9$lambda$8($tint: Long, $this$Canvas: DrawScope) {
-        // Strings: "$this$Canvas"
-        // Fields: StrokeCap.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> DrawScope.getSize-NH-jbRc()
-        // -> Size.getWidth-impl()
-        // -> Size.getHeight-impl()
-        // -> Dp.constructor-impl()
-        // -> DrawScope.toPx-0680j_4()
-        // -> StrokeCap$Companion.getRound-KaPHkGw()
-        // -> Stroke.<init>()
-        // -> OffsetKt.Offset()
-        // -> SizeKt.Size()
-        // -> DrawScope.drawArc-yD3GUKo$default()
-        // -> DrawScope.drawCircle-VaOC9Bg$default()
-    }
-
-    @Composable
-    fun NetworkQualityBadge_3IgeMak$lambda$13(p0: CallNetworkBadge, p1: Long, p2: Boolean, p3: Int, p4: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.NetworkQualityBadge-3IgeMak()
-    }
-
-    @Composable
-    fun SimSlotBadge-19tTp10(simSlotLabel: String, carrierName: String, tint: Long, fontSize: Long, simSlotNumber: Int, simColorArgb: Int) {
-        // Strings: "C(SimSlotBadge)P(3!1,5:c#ui.graphics.Color,1:c#ui.unit.TextUnit,4)379@13613L513:", "370@13225L11", "com.example.ui.components.SimSlotBadge (OemCallBadges.kt:374)", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C383@13735L80:OemCallBadges.kt#qonjpd", "388@13858L258"
-        // Fields: MaterialTheme.INSTANCE, MaterialTheme.$stable, Alignment.Companion, Arrangement.INSTANCE, Modifier.Companion, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, FontWeight.Companion, TextOverflow.Companion
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> Composer.startDefaults()
-        // -> Composer.getDefaultsInvalid()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> TextUnitKt.getSp()
-        // -> Composer.endDefaults()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> OemCallBadgesKt.resolveSimSlotNumber()
-        // -> ColorKt.getDialerBlue()
-        // -> ColorKt.getDialerGreen()
-        // -> Color.box-impl()
-        // -> OemCallBadgesKt.resolveSystemSimColor-t9lfQc4()
-        // -> OemCallBadgesKt.resolveSimNameOnly()
-        // -> Alignment$Companion.getCenterVertically()
-    }
-
-    @Composable
-    fun SimSlotBadge_19tTp10$lambda$16(p0: String, p1: String, p2: Long, p3: Long, p4: Int, p5: Int, p6: Int, p7: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.SimSlotBadge-19tTp10()
-    }
-
-    @Composable
-    fun XosDirectionIndicator(direction: CallDirection, isBlockedFlag: Boolean, modifier: Modifier) {
-        // Strings: "direction", "C(XosDirectionIndicator)508@17690L117:OemCallBadges.kt#qonjpd", "com.example.ui.components.XosDirectionIndicator (OemCallBadges.kt:498)", "Call", "Voicemail", "Blocked", "Rejected", "Missed", "Outgoing", "Answered"
-        // Fields: Modifier.Companion, OemCallBadgesKt$WhenMappings.$EnumSwitchMapping$1, Icons.INSTANCE, Icons$AutoMirrored$Filled.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Enum.ordinal()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> CallDirection.ordinal()
-        // -> NoWhenBranchMatchedException.<init>()
-        // -> Icons.getDefault()
-        // -> CallKt.getCall()
-        // -> ColorKt.getDialerAmber()
-        // -> Color.box-impl()
-        // -> Triple.<init>()
-        // -> VoicemailKt.getVoicemail()
-        // -> BlockKt.getBlock()
-        // -> ColorKt.getDialerBlockedRed()
-        // -> PhoneDisabledKt.getPhoneDisabled()
-    }
-
-    @Composable
-    fun XosDirectionIndicator$lambda$23(p0: CallDirection, p1: Boolean, p2: Modifier, p3: Int, p4: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.XosDirectionIndicator()
-    }
-
-    @Composable
-    fun XosSimNumberedIcon-aM-cp0Q(slotNumber: Int, tint: Long, size: Float) {
-        // Strings: "C(XosSimNumberedIcon)P(1,2:c#ui.graphics.Color,0:c#ui.unit.Dp)634@20975L977:OemC", "com.example.ui.components.XosSimNumberedIcon (OemCallBadges.kt:633)", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C73@3429L9:Box.kt#2w3rfo", "C639@21172L578,639@21103L647,664@21755L193:OemCallBadges.kt#qonjpd", "CC(remember):OemCallBadges.kt#9igjgp"
-        // Fields: Modifier.Companion, Alignment.Companion, ComposeUiNode.Companion, BoxScopeInstance.INSTANCE, Composer.Companion, FontWeight.Companion
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> Dp.constructor-impl()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.size-VpY3zN4()
-        // -> Alignment$Companion.getCenter()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> BoxKt.maybeCachedBoxMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-        // -> Composer.getInserting()
-    }
-
-    fun XosSimNumberedIcon_aM_cp0Q$lambda$33$lambda$32$lambda$31($tint: Long, $this$Canvas: DrawScope) {
-        // Strings: "$this$Canvas"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> DrawScope.getSize-NH-jbRc()
-        // -> Size.getWidth-impl()
-        // -> Size.getHeight-impl()
-        // -> AndroidPath_androidKt.Path()
-        // -> Path.moveTo()
-        // -> Path.lineTo()
-        // -> Path.close()
-        // -> Color.copy-wmQWz5c$default()
-        // -> DrawScope.drawPath-LG529CI$default()
-        // -> Dp.constructor-impl()
-        // -> DrawScope.toPx-0680j_4()
-        // -> Stroke.<init>()
-    }
-
-    @Composable
-    fun XosSimNumberedIcon_aM_cp0Q$lambda$34(p0: Int, p1: Long, p2: Float, p3: Int, p4: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> OemCallBadgesKt.XosSimNumberedIcon-aM-cp0Q()
-    }
-
-    fun avatarPaletteColorFor(key: String): Long {
-        // Strings: "key", "Caller"
-        // Fields: OemCallBadgesKt.UnknownAvatarPalette
-        // -> Intrinsics.checkNotNullParameter()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> StringsKt.isBlank()
-        // -> String.hashCode()
-        // -> Math.abs()
-        // -> List.size()
-        // -> List.get()
-        // -> Pair.getFirst()
-        // -> Color.unbox-impl()
-        TODO("Decoded 34 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun avatarPaletteGradientFor(key: String): Pair {
-        // Strings: "Caller"
-        // Fields: OemCallBadgesKt.UnknownAvatarPalette
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> StringsKt.isBlank()
-        // -> String.hashCode()
-        // -> Math.abs()
-        // -> List.size()
-        // -> List.get()
-        TODO("Decoded 27 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun resolveSimNameOnly(carrierName: String, simSlotLabel: String): String {
-        // Strings: "^SIM\s*[12]$"
-        // Fields: RegexOption.IGNORE_CASE
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> CharSequence.length()
-        // -> Regex.<init>()
-        // -> Regex.matches()
-        TODO("Decoded 61 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun resolveSimNameOnly$default(p0: String, p1: String, p2: Int, p3: Any): String {
-        // -> OemCallBadgesKt.resolveSimNameOnly()
-        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun resolveSimSlotNumber(simSlotNumber: Int, simSlotLabel: String): Int {
-        // Strings: "2", "1"
-        // -> StringBuilder.<init>()
-        // -> CharSequence.length()
-        // -> CharSequence.charAt()
-        // -> Character.isDigit()
-        // -> Appendable.append()
-        // -> StringBuilder.toString()
-        // -> Intrinsics.areEqual()
-        TODO("Decoded 50 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun resolveSystemSimColor-t9lfQc4(slotNumber: Int, simColorArgb: Int, fallback: Color): Long {
-        // -> Integer.intValue()
-        // -> ColorKt.Color()
-        // -> Color.unbox-impl()
-        // -> ColorKt.getDialerBlue()
-        // -> ColorKt.getDialerGreen()
-        TODO("Decoded 21 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun resolveSystemSimColor-t9lfQc4$default(p0: Int, p1: Int, p2: Color, p3: Int, p4: Any): Long {
-        // -> OemCallBadgesKt.resolveSystemSimColor-t9lfQc4()
-        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }
 
-class OemCallBadgesKt$WhenMappings {
+fun loadContactBitmapSync(context: Context, uriStr: String): Bitmap? {
+    if (uriStr.isBlank()) return null
+    return runCatching {
+        context.contentResolver.openInputStream(Uri.parse(uriStr))?.use { stream ->
+            BitmapFactory.decodeStream(stream)
+        }
+    }.getOrNull()
 }
 
-class OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1 : SuspendLambda(), Function2 {
-    var L$0: Any
-    var L$1: Any
-    var label: Int
-
-    constructor(p0: String, p1: Context) {
-        // Fields: OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.$photoUri, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.$context
-        // -> SuspendLambda.<init>()
+@Composable
+fun rememberContactPhotoBitmap(photoUri: String): ImageBitmap? {
+    val context = LocalContext.current
+    val state by produceState<ImageBitmap?>(
+        initialValue = if (photoUri.isNotBlank()) ContactPhotoCache.get(photoUri) else null,
+        key1 = photoUri
+    ) {
+        if (photoUri.isBlank()) {
+            value = null
+            return@produceState
+        }
+        ContactPhotoCache.get(photoUri)?.let {
+            value = it
+            return@produceState
+        }
+        val decoded = withContext(Dispatchers.IO) {
+            loadContactBitmapSync(context, photoUri)?.asImageBitmap()
+        }
+        if (decoded != null) {
+            ContactPhotoCache.put(photoUri, decoded)
+        }
+        value = decoded
     }
-
-    suspend fun create(p0: Any): Continuation {
-        // Fields: OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.$photoUri, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.$context, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.L$0
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.<init>()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    suspend fun invoke(p0: ProduceStateScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.create()
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "call to 'resume' before 'invoke' with coroutine"
-        // Fields: OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.L$0, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.label, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.L$1, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.$photoUri, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1.$context, Unit.INSTANCE
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> StringsKt.isBlank()
-        // -> Dispatchers.getIO()
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.<init>()
-        // -> SpillingKt.nullOutSpilledVariable()
-        // -> BuildersKt.withContext()
-        // -> ProduceStateScope.setValue()
-        TODO("Decoded 57 Dalvik instructions; see decompiled_bytecode/")
-    }
-
+    return state
 }
 
-class OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1 : SuspendLambda(), Function2 {
-    var L$0: Any
-    var label: Int
-
-    constructor(p0: Context, p1: String) {
-        // Fields: OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.$context, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.$photoUri
-        // -> SuspendLambda.<init>()
+@Composable
+fun CallDirectionIcon(
+    direction: CallDirection,
+    isVideoCall: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val (icon, tint) = when (direction) {
+        CallDirection.INCOMING -> Icons.AutoMirrored.Filled.CallReceived to DialerEmeraldBright
+        CallDirection.OUTGOING -> Icons.AutoMirrored.Filled.CallMade to DialerBlue
+        CallDirection.MISSED -> Icons.AutoMirrored.Filled.CallMissed to DialerBlockedRed
+        CallDirection.REJECTED -> Icons.Default.PhoneDisabled to DialerBlockedRed
+        CallDirection.BLOCKED -> Icons.Default.Block to DialerBlockedRed
+        CallDirection.VOICEMAIL -> Icons.Default.Voicemail to DialerCyan
+        CallDirection.UNKNOWN -> Icons.AutoMirrored.Filled.CallReceived to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    suspend fun create(p0: Any): Continuation {
-        // Fields: OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.$context, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.$photoUri, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.L$0
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.<init>()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = direction.name,
+            tint = tint,
+            modifier = Modifier.size(14.dp)
+        )
+        if (isVideoCall) {
+            Icon(
+                imageVector = Icons.Default.Videocam,
+                contentDescription = "Video Call",
+                tint = tint,
+                modifier = Modifier.size(13.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun VoLteBoxBadge(
+    badge: CallNetworkBadge,
+    isHdCall: Boolean = false,
+    tintColor: Color = Color(0xFF475569),
+    hdTintColor: Color = DialerEmeraldBadge,
+    modifier: Modifier = Modifier
+) {
+    val showNetworkBadge = badge != CallNetworkBadge.STANDARD && badge != CallNetworkBadge.HD_VOICE
+    val showHdBadge = isHdCall || badge == CallNetworkBadge.HD_VOICE
+    if (!showNetworkBadge && !showHdBadge) return
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        if (showNetworkBadge) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .border(1.1.dp, tintColor, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 3.5.dp, vertical = 1.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                when (badge) {
+                    CallNetworkBadge.VOLTE -> {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Vo",
+                                color = tintColor,
+                                fontSize = 6.sp,
+                                lineHeight = 6.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "LTE",
+                                color = tintColor,
+                                fontSize = 6.sp,
+                                lineHeight = 6.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+                    CallNetworkBadge.VOWIFI -> {
+                        Text(
+                            text = "VoWiFi",
+                            color = tintColor,
+                            fontSize = 6.8.sp,
+                            lineHeight = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    CallNetworkBadge.VONR_5G -> {
+                        Text(
+                            text = "5G",
+                            color = tintColor,
+                            fontSize = 8.sp,
+                            lineHeight = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    CallNetworkBadge.CARRIER_VIDEO -> {
+                        Text(
+                            text = "ViLTE",
+                            color = tintColor,
+                            fontSize = 7.sp,
+                            lineHeight = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    CallNetworkBadge.ROAMING -> {
+                        Text(
+                            text = "R",
+                            color = tintColor,
+                            fontSize = 8.sp,
+                            lineHeight = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    CallNetworkBadge.HD_VOICE, CallNetworkBadge.STANDARD -> Unit
+                }
+            }
+        }
+
+        if (showHdBadge) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .border(1.1.dp, hdTintColor, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 3.5.dp, vertical = 1.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "HD",
+                    color = hdTintColor,
+                    fontSize = 8.2.sp,
+                    lineHeight = 9.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SimOutlineBadge(
+    slotNumber: Int,
+    color: Color = when (slotNumber) {
+        2 -> DialerTeal
+        1 -> DialerPurple
+        else -> Color(0xFF94A3B8)
+    },
+    size: Dp = 14.dp
+) {
+    Box(
+        modifier = Modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = this.size.width
+            val h = this.size.height
+            val cut = w * 0.28f
+            val path = Path().apply {
+                moveTo(cut, 0f)
+                lineTo(w - 1.5f, 0f)
+                lineTo(w - 1.5f, h - 1.5f)
+                lineTo(1.5f, h - 1.5f)
+                lineTo(1.5f, cut)
+                close()
+            }
+            drawPath(path = path, color = color, style = Stroke(width = 2.4f))
+
+            if (slotNumber !in 1..2) {
+                // Normal SIM logo inner chip contacts when SIM is not in phone
+                val chipW = w * 0.44f
+                val chipH = h * 0.40f
+                val chipLeft = (w - chipW) / 2f
+                val chipTop = (h - chipH) * 0.56f
+                drawRoundRect(
+                    color = color,
+                    topLeft = Offset(chipLeft, chipTop),
+                    size = Size(chipW, chipH),
+                    cornerRadius = CornerRadius(1.5f, 1.5f),
+                    style = Stroke(width = 1.6f)
+                )
+            }
+        }
+        if (slotNumber in 1..2) {
+            Text(
+                text = slotNumber.toString(),
+                color = color,
+                fontSize = (size.value * 0.58f).sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = (size.value * 0.65f).sp
+            )
+        }
+    }
+}
+
+@Composable
+fun OemSimChip(
+    slotNumber: Int,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    if (slotNumber !in 1..2) {
+        // SIM used for this call is not currently in the phone -> show only normal SIM logo
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SimOutlineBadge(
+                slotNumber = 0,
+                color = Color(0xFF94A3B8),
+                size = 13.5.dp
+            )
+        }
+        return
     }
 
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
+    val color = if (slotNumber == 2) DialerTeal else DialerPurple
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        SimOutlineBadge(slotNumber = slotNumber, color = color, size = 13.dp)
+        Text(
+            text = label.ifBlank { "SIM $slotNumber" },
+            color = color,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun GoogleGIcon(size: Dp = 18.dp, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(size)) {
+        val stroke = this.size.width * 0.21f
+        val pad = stroke * 0.55f
+        val arcSize = Size(this.size.width - pad * 2, this.size.height - pad * 2)
+        val tl = Offset(pad, pad)
+
+        // Blue right bottom
+        drawArc(
+            color = Color(0xFF4285F4),
+            startAngle = -15f,
+            sweepAngle = 70f,
+            useCenter = false,
+            topLeft = tl,
+            size = arcSize,
+            style = Stroke(width = stroke, cap = StrokeCap.Butt)
+        )
+        // Green bottom
+        drawArc(
+            color = Color(0xFF34A853),
+            startAngle = 55f,
+            sweepAngle = 95f,
+            useCenter = false,
+            topLeft = tl,
+            size = arcSize,
+            style = Stroke(width = stroke, cap = StrokeCap.Butt)
+        )
+        // Yellow left
+        drawArc(
+            color = Color(0xFFFBBC05),
+            startAngle = 150f,
+            sweepAngle = 60f,
+            useCenter = false,
+            topLeft = tl,
+            size = arcSize,
+            style = Stroke(width = stroke, cap = StrokeCap.Butt)
+        )
+        // Red top
+        drawArc(
+            color = Color(0xFFEA4335),
+            startAngle = 210f,
+            sweepAngle = 110f,
+            useCenter = false,
+            topLeft = tl,
+            size = arcSize,
+            style = Stroke(width = stroke, cap = StrokeCap.Butt)
+        )
+        // Horizontal crossbar
+        val cy = this.size.height * 0.5f
+        drawLine(
+            color = Color(0xFF4285F4),
+            start = Offset(this.size.width * 0.50f, cy),
+            end = Offset(this.size.width * 0.92f, cy),
+            strokeWidth = stroke,
+            cap = StrokeCap.Butt
+        )
+    }
+}
+
+@Composable
+fun ContactStorageRow(
+    storageType: ContactStorageType,
+    accountName: String,
+    simSlotIndex: Int = -1,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        when (storageType) {
+            ContactStorageType.GOOGLE_ACCOUNT -> {
+                GoogleGIcon(size = 14.dp)
+                Text(
+                    text = accountName.ifBlank { "Google" },
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            ContactStorageType.SIM_CARD -> {
+                val slot = (simSlotIndex + 1).coerceIn(1, 2)
+                SimOutlineBadge(slotNumber = slot, size = 14.dp)
+                Text(
+                    text = accountName.ifBlank { "SIM $slot" },
+                    fontSize = 12.sp,
+                    color = if (slot == 2) DialerTeal else DialerPurple,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            ContactStorageType.PHONE_ONLY -> {
+                Icon(
+                    imageVector = Icons.Default.Smartphone,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    text = "Phone",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            ContactStorageType.OTHER_ACCOUNT -> {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    text = accountName.ifBlank { "Account" },
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ContactAvatarCircle(
+    title: String,
+    size: Dp = 44.dp,
+    isBlocked: Boolean = false,
+    photoUri: String = "",
+    useSilhouetteFallback: Boolean = false
+) {
+    val photoBitmap = rememberContactPhotoBitmap(photoUri)
+    if (photoBitmap != null) {
+        Image(
+            bitmap = photoBitmap,
+            contentDescription = title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+        )
+        return
     }
 
-    suspend fun invoke(p0: CoroutineScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.create()
-        // -> OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
+    val ringPalette = listOf(
+        Color(0xFF1E9E76) to Color(0xFF39B58C),
+        Color(0xFF476BE0) to Color(0xFF6688EC),
+        Color(0xFF7D6B5D) to Color(0xFF948274),
+        Color(0xFF3188E5) to Color(0xFF56A5F5),
+        Color(0xFF2CB158) to Color(0xFF4BC875),
+        Color(0xFFD64576) to Color(0xFFE46791),
+        Color(0xFF7B57E0) to Color(0xFF9A7AF0)
+    )
+    val pastelPalette = listOf(
+        Color(0xFF90D28D) to Color(0xFF1F381E),
+        Color(0xFF7DD3F5) to Color(0xFF163544),
+        Color(0xFFF3B5AC) to Color(0xFF471F1B),
+        Color(0xFFC5B4F0) to Color(0xFF2D1E52),
+        Color(0xFFF6D28B) to Color(0xFF473510),
+        Color(0xFF8CD9C6) to Color(0xFF153D34)
+    )
+
+    val hashIdx = abs(title.hashCode())
+    val (outerRing, innerCircle) = if (isBlocked) {
+        DialerBlockedRed to DialerCrimson.copy(alpha = 0.85f)
+    } else {
+        ringPalette[hashIdx % ringPalette.size]
     }
 
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "call to 'resume' before 'invoke' with coroutine"
-        // Fields: OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.L$0, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.label, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.$context, OemCallBadgesKt$CallerAvatarCircle$bitmapState$1$1$1.$photoUri, Result.Companion
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> Context.getContentResolver()
-        // -> Uri.parse()
-        // -> ContentResolver.openInputStream()
-        // -> BitmapFactory.decodeStream()
-        // -> CloseableKt.closeFinally()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-        // -> Result.isFailure-impl()
-        TODO("Decoded 54 Dalvik instructions; see decompiled_bytecode/")
+    if (useSilhouetteFallback) {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(outerRing)
+                .padding((size.value * 0.10f).dp)
+                .clip(CircleShape)
+                .background(innerCircle),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = title,
+                tint = Color.White,
+                modifier = Modifier.size(size * 0.56f)
+            )
+        }
+    } else {
+        val (bgPastel, fgDark) = pastelPalette[hashIdx % pastelPalette.size]
+        val initials = title.trim()
+            .split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+            .let { parts ->
+                when {
+                    parts.size >= 2 -> "${parts.first().first()}${parts.last().first()}".uppercase()
+                    parts.size == 1 -> parts.first().take(2).uppercase()
+                    else -> "#"
+                }
+            }
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(bgPastel),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initials,
+                color = fgDark,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = (size.value * 0.36f).sp,
+                maxLines = 1
+            )
+        }
     }
+}
 
+@Composable
+fun DialerM3Slider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    modifier: Modifier = Modifier
+) {
+    var widthPx by remember { mutableFloatStateOf(1f) }
+    val span = (valueRange.endInclusive - valueRange.start).coerceAtLeast(0.0001f)
+    val fraction = ((value - valueRange.start) / span).coerceIn(0f, 1f)
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(38.dp)
+            .onSizeChanged { widthPx = it.width.toFloat().coerceAtLeast(1f) }
+            .pointerInput(valueRange) {
+                detectTapGestures { offset ->
+                    val frac = (offset.x / widthPx).coerceIn(0f, 1f)
+                    onValueChange(valueRange.start + frac * span)
+                }
+            }
+            .pointerInput(valueRange) {
+                detectHorizontalDragGestures { change, _ ->
+                    change.consume()
+                    val frac = (change.position.x / widthPx).coerceIn(0f, 1f)
+                    onValueChange(valueRange.start + frac * span)
+                }
+            },
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val trackH = 14.dp.toPx()
+            val trackY = (size.height - trackH) / 2f
+            val thumbW = 4.5.dp.toPx()
+            val thumbH = 34.dp.toPx()
+            val thumbGap = 5.dp.toPx()
+            val thumbX = (fraction * (size.width - thumbW)).coerceIn(0f, size.width - thumbW)
+            val corner = CornerRadius(trackH / 2f, trackH / 2f)
+
+            // Active green track on left of thumb
+            val activeEnd = (thumbX - thumbGap).coerceAtLeast(0f)
+            if (activeEnd > 4f) {
+                drawRoundRect(
+                    color = DialerEmeraldBright,
+                    topLeft = Offset(0f, trackY),
+                    size = Size(activeEnd, trackH),
+                    cornerRadius = corner
+                )
+            }
+
+            // Inactive aqua track on right of thumb
+            val inactiveStart = (thumbX + thumbW + thumbGap).coerceAtMost(size.width)
+            val inactiveW = (size.width - inactiveStart).coerceAtLeast(0f)
+            if (inactiveW > 4f) {
+                drawRoundRect(
+                    color = Color(0xFFB5EEF0),
+                    topLeft = Offset(inactiveStart, trackY),
+                    size = Size(inactiveW, trackH),
+                    cornerRadius = corner
+                )
+                // Small dot at the end of inactive track
+                drawCircle(
+                    color = DialerTeal,
+                    radius = 2.dp.toPx(),
+                    center = Offset(size.width - trackH / 2f, size.height / 2f)
+                )
+            }
+
+            // Vertical pill thumb
+            drawRoundRect(
+                color = DialerEmeraldBright,
+                topLeft = Offset(thumbX, (size.height - thumbH) / 2f),
+                size = Size(thumbW, thumbH),
+                cornerRadius = CornerRadius(thumbW / 2f, thumbW / 2f)
+            )
+        }
+    }
 }

@@ -1,1056 +1,913 @@
-// Reconstructed from APK DEX metadata & bytecode (RecentsScreen.kt)
 package com.example.ui.screens
 
-import android.content.Context
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material3.SwipeToDismissBoxState
+import android.text.format.DateUtils
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.runtime.Composer
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.roundToInt
+import com.example.model.CallDirection
 import com.example.model.CallLogEntry
 import com.example.model.MergedCallGroup
-import com.example.viewmodel.RecentsFilter
-import java.util.List
-import kotlinx.coroutines.CoroutineScope
+import com.example.model.RecentsCallFilter
+import com.example.ui.components.CallDirectionIcon
+import com.example.ui.components.ContactAvatarCircle
+import com.example.ui.components.OemSimChip
+import com.example.ui.components.VoLteBoxBadge
+import com.example.ui.theme.DialerBlockedRed
+import com.example.ui.theme.DialerCrimson
+import com.example.ui.theme.DialerEmerald
+import com.example.ui.theme.DialerTeal
+import com.example.util.AppToast
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class RecentsScreenKt {
-    @Composable
-    fun RecentsScreen(groups: List<*>, activeFilter: RecentsFilter, hasCallLogPermission: Boolean, isLoading: Boolean, onClearFilter: Function0, onRequestPermissions: Function0, onAudioCall: Function1, onMessage: Function1, onOpenDetails: Function1, onDeleteGroup: Function1) {
-        // Strings: "groups", "activeFilter", "onClearFilter", "onRequestPermissions", "onAudioCall", "onMessage", "onOpenDetails", "onDeleteGroup", "C(RecentsScreen)P(1!3,5,9!1,7,8)96@4327L51,97@4406L33,98@4461L31,100@4496L7164:R", "com.example.ui.screens.RecentsScreen (RecentsScreen.kt:95)", "CC(remember):RecentsScreen.kt#9igjgp", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C87@4365L9:Column.kt#2w3rfo", "C138@5854L558,151@6439L236,181@7518L11,182@7614L11,180@7464L315,161@6749L20,172@"
-        // Fields: Composer.Companion, Modifier.Companion, Arrangement.INSTANCE, Alignment.Companion, ComposeUiNode.Companion, ColumnScopeInstance.INSTANCE, BoxScopeInstance.INSTANCE, OutlinedTextFieldDefaults.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, Color.Companion, ComposableSingletons$RecentsScreenKt.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getCurrentMarker()
-        // -> Composer.changedInstance()
-        // -> Enum.ordinal()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> SnapshotStateKt.mutableStateOf$default()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> SnapshotIntStateKt.mutableIntStateOf()
-        // -> SizeKt.fillMaxSize$default()
-        // -> Arrangement.getTop()
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun RecentsScreen(
+    mergedGroups: List<MergedCallGroup>,
+    searchQuery: String,
+    recentsFilter: RecentsCallFilter,
+    hasCallLogPermission: Boolean,
+    isCallLogsLoaded: Boolean = true,
+    glassTintAlpha: Float,
+    totalCallCount: Int = 0,
+    unseenMissedCount: Int = 0,
+    isVideoCallAvailable: Boolean = true,
+    videoUnavailableReason: String = "",
+    onMarkAllMissedSeen: () -> Unit = {},
+    onSearchChange: (String) -> Unit,
+    onRequestPermissions: () -> Unit,
+    onAudioCall: (CallLogEntry) -> Unit,
+    onVideoCall: (String, String) -> Unit,
+    onMessage: (String) -> Unit,
+    onOpenDetails: (MergedCallGroup) -> Unit,
+    onSaveNumberToContacts: (String) -> Unit,
+    onToggleBlockNumber: (String, String) -> Unit,
+    onDeleteGroup: (MergedCallGroup) -> Unit,
+    onDeleteLastCallInGroup: (MergedCallGroup) -> Unit = { onDeleteGroup(it) }
+) {
+    val dark = isSystemInDarkTheme()
+    var pendingDeleteGroup by remember { mutableStateOf<MergedCallGroup?>(null) }
+    var swipeResetCounter by remember { mutableIntStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("recents_screen")
+    ) {
+        // Single top pill Search bar
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(if (dark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFEEF2F7))
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+                Box(modifier = Modifier.weight(1f)) {
+                    if (searchQuery.isEmpty()) {
+                        Text(
+                            text = "Search call logs (name or number)...",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 14.5.sp
+                        )
+                    }
+                    BasicTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchChange,
+                        singleLine = true,
+                        textStyle = TextStyle(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.5.sp
+                        ),
+                        cursorBrush = SolidColor(DialerTeal),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("recents_search_input")
+                    )
+                }
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(
+                        onClick = { onSearchChange("") },
+                        modifier = Modifier.size(22.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear Search",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        if (!hasCallLogPermission) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = null,
+                        tint = DialerEmerald,
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Text(
+                        text = "Call Log Access Required",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+                    Text(
+                        text = "Grant Call Log permission to view and manage your incoming, outgoing, and missed calls.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = onRequestPermissions,
+                        colors = ButtonDefaults.buttonColors(containerColor = DialerEmerald),
+                        modifier = Modifier.testTag("grant_call_log_permission_btn")
+                    ) {
+                        Text("Grant Call Log Access", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        } else if (!isCallLogsLoaded && mergedGroups.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = DialerEmerald,
+                    modifier = Modifier.size(30.dp),
+                    strokeWidth = 3.dp
+                )
+            }
+        } else if (mergedGroups.isEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(42.dp)
+                    )
+                    Text(
+                        text = if (recentsFilter != RecentsCallFilter.ALL) {
+                            "No ${recentsFilter.label} Calls"
+                        } else {
+                            "No Recent Calls"
+                        },
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Use the T9 keypad below to dial a number or search contacts.",
+                        fontSize = 12.5.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            val listState = rememberLazyListState()
+            val coroutineScope = rememberCoroutineScope()
+            var isDraggingScroller by remember { mutableStateOf(false) }
+            var dragFraction by remember { mutableFloatStateOf(0f) }
+
+            val scrollFraction by remember(mergedGroups.size) {
+                derivedStateOf {
+                    val total = mergedGroups.size
+                    if (total <= 1) {
+                        0f
+                    } else {
+                        val visibleCount = listState.layoutInfo.visibleItemsInfo.size.coerceAtLeast(1)
+                        val maxFirstIndex = (total - visibleCount).coerceAtLeast(1)
+                        (listState.firstVisibleItemIndex.toFloat() / maxFirstIndex.toFloat()).coerceIn(0f, 1f)
+                    }
+                }
+            }
+
+            val activeFraction = if (isDraggingScroller) dragFraction else scrollFraction
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("recents_lazy_list"),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 26.dp,
+                        top = 4.dp,
+                        bottom = 110.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(mergedGroups, key = { "${it.groupKey}_$swipeResetCounter" }) { group ->
+                        RecentCallGroupCard(
+                            group = group,
+                            isVideoCallAvailable = isVideoCallAvailable,
+                            videoUnavailableReason = videoUnavailableReason,
+                            onAudioCall = { onAudioCall(group.primaryEntry) },
+                            onVideoCall = {
+                                onVideoCall(group.primaryEntry.number, group.primaryEntry.displayTitle)
+                            },
+                            onMessage = { onMessage(group.primaryEntry.number) },
+                            onOpenDetails = { onOpenDetails(group) },
+                            onSaveContact = { onSaveNumberToContacts(group.primaryEntry.number) },
+                            onToggleBlock = {
+                                onToggleBlockNumber(group.primaryEntry.number, group.primaryEntry.cachedName)
+                            },
+                            onRequestDelete = { pendingDeleteGroup = group },
+                            onSwipeSettledReset = { swipeResetCounter++ }
+                        )
+                    }
+                }
+
+                if (mergedGroups.size > 1) {
+                    val density = LocalDensity.current
+                    var trackHeightPx by remember { mutableIntStateOf(1) }
+                    val thumbHeightDp = 42.dp
+                    val thumbHeightPx = with(density) { thumbHeightDp.toPx() }
+
+                    fun scrollToFraction(fraction: Float) {
+                        val clamped = fraction.coerceIn(0f, 1f)
+                        dragFraction = clamped
+                        val targetIndex = (clamped * (mergedGroups.size - 1)).roundToInt()
+                            .coerceIn(0, (mergedGroups.size - 1).coerceAtLeast(0))
+                        coroutineScope.launch {
+                            listState.scrollToItem(targetIndex)
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight()
+                            .padding(top = 8.dp, bottom = 112.dp, end = 2.dp)
+                            .width(22.dp)
+                            .onSizeChanged { size ->
+                                trackHeightPx = size.height.coerceAtLeast(1)
+                            }
+                            .pointerInput(mergedGroups.size) {
+                                detectTapGestures(
+                                    onPress = { offset ->
+                                        isDraggingScroller = true
+                                        val usableTrack = (trackHeightPx - thumbHeightPx).coerceAtLeast(1f)
+                                        val frac = ((offset.y - thumbHeightPx / 2f) / usableTrack).coerceIn(0f, 1f)
+                                        scrollToFraction(frac)
+                                        tryAwaitRelease()
+                                        isDraggingScroller = false
+                                    }
+                                )
+                            }
+                            .pointerInput(mergedGroups.size) {
+                                detectVerticalDragGestures(
+                                    onDragStart = { offset ->
+                                        isDraggingScroller = true
+                                        val usableTrack = (trackHeightPx - thumbHeightPx).coerceAtLeast(1f)
+                                        val frac = ((offset.y - thumbHeightPx / 2f) / usableTrack).coerceIn(0f, 1f)
+                                        scrollToFraction(frac)
+                                    },
+                                    onDragEnd = { isDraggingScroller = false },
+                                    onDragCancel = { isDraggingScroller = false },
+                                    onVerticalDrag = { change, _ ->
+                                        change.consume()
+                                        val usableTrack = (trackHeightPx - thumbHeightPx).coerceAtLeast(1f)
+                                        val frac = ((change.position.y - thumbHeightPx / 2f) / usableTrack).coerceIn(0f, 1f)
+                                        scrollToFraction(frac)
+                                    }
+                                )
+                            }
+                            .testTag("recents_fast_scroller"),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        // Subtle track line
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                        alpha = if (isDraggingScroller) 0.28f else 0.14f
+                                    )
+                                )
+                        )
+
+                        val maxThumbOffsetPx = (trackHeightPx - thumbHeightPx).coerceAtLeast(0f)
+                        val thumbOffsetY = (activeFraction * maxThumbOffsetPx).roundToInt()
+
+                        // Draggable / interactive thumb pill
+                        Box(
+                            modifier = Modifier
+                                .offset { IntOffset(0, thumbOffsetY) }
+                                .width(if (isDraggingScroller) 8.dp else 6.dp)
+                                .height(thumbHeightDp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (isDraggingScroller || listState.isScrollInProgress) {
+                                        DialerEmerald
+                                    } else {
+                                        DialerEmerald.copy(alpha = 0.65f)
+                                    }
+                                )
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    private fun RecentsScreen$lambda$1($pendingDeleteGroup$delegate: MutableState): MergedCallGroup {
-        // -> State.getValue()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
+    pendingDeleteGroup?.let { group ->
+        AlertDialog(
+            onDismissRequest = { pendingDeleteGroup = null },
+            shape = RoundedCornerShape(26.dp),
+            title = { Text("Delete Call History?", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "Delete call log record(s) for \"${group.primaryEntry.displayTitle}\" (${group.count} total)?"
+                )
+            },
+            confirmButton = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = { pendingDeleteGroup = null },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                        modifier = Modifier.testTag("delete_dialog_cancel_btn")
+                    ) {
+                        Text("Cancel", fontSize = 13.sp, maxLines = 1)
+                    }
+                    Button(
+                        onClick = {
+                            onDeleteLastCallInGroup(group)
+                            pendingDeleteGroup = null
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DialerTeal
+                        ),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                        modifier = Modifier.testTag("delete_last_call_btn")
+                    ) {
+                        Text(
+                            text = "Delete Last Call",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.5.sp,
+                            maxLines = 1
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            onDeleteGroup(group)
+                            pendingDeleteGroup = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = DialerCrimson),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                        modifier = Modifier.testTag("delete_all_calls_btn")
+                    ) {
+                        Text(
+                            text = "Delete All",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.5.sp,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        )
     }
-
-    private fun RecentsScreen$lambda$2($pendingDeleteGroup$delegate: MutableState, <set-?>: MergedCallGroup) {
-        // -> MutableState.setValue()
-    }
-
-    private fun RecentsScreen$lambda$4($swipeResetCounter$delegate: MutableIntState): Int {
-        // -> IntState.getIntValue()
-        TODO("Decoded 8 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$11$lambda$10($onRequestPermissions: Function0, $this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C110@4793L908:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous>.<anonymous>.<anonymous> (Recent", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C87@4365L9:Column.kt#2w3rfo", "C115@5001L107,118@5210L11,116@5121L200,124@5504L11,122@5334L244,127@5591L98:Rece", "Call Log Access Needed", "Grant Call Log permission to view and manage your merged call history. Default D"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, ColumnScopeInstance.INSTANCE, Icons.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, FontWeight.Companion, ComposableSingletons$RecentsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-3ABfNKs()
-        // -> Alignment$Companion.getCenterHorizontally()
-        // -> Arrangement.spacedBy-0680j_4()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> ColumnKt.columnMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-        // -> Composer.getInserting()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$12(p0: List<*>, p1: RecentsFilter, p2: Boolean, p3: Boolean, p4: Function0, p5: Function0, p6: Function1, p7: Function1, p8: Function1, p9: Function1, p10: Int, p11: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> RecentsScreenKt.RecentsScreen()
-    }
-
-    fun RecentsScreen$lambda$47$lambda$20$lambda$19($searchQuery$delegate: MutableState, it: String) {
-        // Strings: "it"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> RecentsScreenKt.RecentsScreen$lambda$8()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$23($searchQuery$delegate: MutableState) {
-        // Strings: "C:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous>.<anonymous> (RecentsScreen.kt:1", "174@7219L20,174@7198L164", "CC(remember):RecentsScreen.kt#9igjgp"
-        // Fields: Composer.Companion, ComposableSingletons$RecentsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> RecentsScreenKt.RecentsScreen$lambda$7()
-        // -> CharSequence.length()
-        // -> Composer.startReplaceGroup()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda23.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ComposableSingletons$RecentsScreenKt.getLambda$-71427783$app()
-        // -> IconButtonKt.IconButton()
-        // -> Composer.endReplaceGroup()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun RecentsScreen$lambda$47$lambda$23$lambda$22$lambda$21($searchQuery$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt.RecentsScreen$lambda$8()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$24(p0: List<*>, p1: RecentsFilter, p2: Boolean, p3: Boolean, p4: Function0, p5: Function0, p6: Function1, p7: Function1, p8: Function1, p9: Function1, p10: Int, p11: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> RecentsScreenKt.RecentsScreen()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$27(p0: List<*>, p1: RecentsFilter, p2: Boolean, p3: Boolean, p4: Function0, p5: Function0, p6: Function1, p7: Function1, p8: Function1, p9: Function1, p10: Int, p11: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> RecentsScreenKt.RecentsScreen()
-    }
-
-    fun RecentsScreen$lambda$47$lambda$46$lambda$45($isSearching: Boolean, $searchResults: List<*>, $remainingGroups: List<*>, $trimmedQuery: String, $onAudioCall: Function1, $onMessage: Function1, $onOpenDetails: Function1, $pendingDeleteGroup$delegate: MutableState, $swipeResetCounter$delegate: MutableIntState, $this$LazyColumn: LazyListScope) {
-        // Strings: "$this$LazyColumn", "search_results_header", "search_results_empty", "remaining_logs_header"
-        // Fields: RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$1.INSTANCE, ComposableSingletons$RecentsScreenKt.INSTANCE, RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$5.INSTANCE, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda0.<init>()
-        // -> ComposableLambdaKt.composableLambdaInstance()
-        // -> LazyListScope.item$default()
-        // -> List.isEmpty()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda11.<init>()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda21.<init>()
-        // -> List.size()
-        // -> RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$2.<init>()
-        // -> RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$3.<init>()
-        // -> RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$4.<init>()
-        // -> LazyListScope.items()
-        // -> Collection.isEmpty()
-        // -> ComposableSingletons$RecentsScreenKt.getLambda$188855863$app()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda22.<init>()
-        // -> RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$6.<init>()
-        // -> RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$7.<init>()
-        // -> RecentsScreenKt$RecentsScreen$lambda$47$lambda$46$lambda$45$$inlined$items$default$8.<init>()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$46$lambda$45$lambda$28($searchResults: List<*>, $this$item: LazyItemScope) {
-        // Strings: "$this$item", "C225@9217L330:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous>.<anonymous>.<anonymous>.<anonym", "Search Results (", ")", "recents_search_results_header"
-        // Fields: FontWeight.Companion, Modifier.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> List.size()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> ColorKt.getDialerGreen()
-        // -> TextUnitKt.getSp()
-        // -> FontWeight$Companion.getBold()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-VpY3zN4()
-        // -> TestTagKt.testTag()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$46$lambda$45$lambda$30($trimmedQuery: String, $this$item: LazyItemScope) {
-        // Strings: "$this$item", "C237@9725L360,237@9656L429:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous>.<anonymous>.<anonymous>.<anonym"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda8.<init>()
-        // -> ComposableLambdaKt.rememberComposableLambda()
-        // -> LiquidGlassKt.LiquidGlassSurface-Sj8uqqQ()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$47$lambda$46$lambda$45$lambda$30$lambda$29($trimmedQuery: String, $this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C240@9855L11,238@9741L330:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous>.<anonymous>.<anonymous>.<anonym", "No matching call logs for \"", "\""
-        // Fields: MaterialTheme.INSTANCE, MaterialTheme.$stable, Modifier.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> TextUnitKt.getSp()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-VpY3zN4()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun RecentsScreen$lambda$47$lambda$46$lambda$45$lambda$31(it: MergedCallGroup): Any {
-        // Strings: "it", "search_"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> MergedCallGroup.getGroupKey()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 14 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun RecentsScreen$lambda$47$lambda$46$lambda$45$lambda$38(it: MergedCallGroup): Any {
-        // Strings: "it"
-        // -> Intrinsics.checkNotNullParameter()
-        // -> MergedCallGroup.getGroupKey()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun RecentsScreen$lambda$49$lambda$48($pendingDeleteGroup$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt.RecentsScreen$lambda$2()
-    }
-
-    private fun RecentsScreen$lambda$5($swipeResetCounter$delegate: MutableIntState, <set-?>: Int) {
-        // -> MutableIntState.setIntValue()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$52($onDeleteGroup: Function1, $toDelete: MergedCallGroup, $pendingDeleteGroup$delegate: MutableState) {
-        // Strings: "C308@12355L44,304@12232L87,303@12204L329:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous> (RecentsScreen.kt:303)", "confirm_delete_call_log", "CC(remember):RecentsScreen.kt#9igjgp"
-        // Fields: ButtonDefaults.INSTANCE, ButtonDefaults.$stable, Modifier.Companion, Composer.Companion, ComposableSingletons$RecentsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ColorKt.getDialerCrimson()
-        // -> ButtonDefaults.buttonColors-ro_MJ88()
-        // -> TestTagKt.testTag()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.changed()
-        // -> Composer.changedInstance()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda9.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ComposableSingletons$RecentsScreenKt.getLambda$197529035$app()
-        // -> ButtonKt.Button()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun RecentsScreen$lambda$52$lambda$51$lambda$50($onDeleteGroup: Function1, $toDelete: MergedCallGroup, $pendingDeleteGroup$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> Function1.invoke()
-        // -> RecentsScreenKt.RecentsScreen$lambda$2()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$55($pendingDeleteGroup$delegate: MutableState) {
-        // Strings: "C315@12596L29,315@12575L88:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous> (RecentsScreen.kt:315)", "CC(remember):RecentsScreen.kt#9igjgp"
-        // Fields: Composer.Companion, ComposableSingletons$RecentsScreenKt.INSTANCE, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda20.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> ComposableSingletons$RecentsScreenKt.getLambda$-1702410854$app()
-        // -> ButtonKt.TextButton()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    fun RecentsScreen$lambda$55$lambda$54$lambda$53($pendingDeleteGroup$delegate: MutableState) {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt.RecentsScreen$lambda$2()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$56($label: String) {
-        // Strings: "C301@12157L11:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsScreen.<anonymous> (RecentsScreen.kt:301)"
-        // Fields: Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun RecentsScreen$lambda$57(p0: List<*>, p1: RecentsFilter, p2: Boolean, p3: Boolean, p4: Function0, p5: Function0, p6: Function1, p7: Function1, p8: Function1, p9: Function1, p10: Int, p11: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> RecentsScreenKt.RecentsScreen()
-    }
-
-    private fun RecentsScreen$lambda$7($searchQuery$delegate: MutableState): String {
-        // -> State.getValue()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun RecentsScreen$lambda$8($searchQuery$delegate: MutableState, <set-?>: String) {
-        // -> MutableState.setValue()
-    }
-
-    @Composable
-    private fun RecentsSwipeCardItem(group: MergedCallGroup, pendingDeleteGroup: MergedCallGroup, swipeResetCounter: Int, onRequestDelete: Function1, onIncrementReset: Function0, onAudioCall: Function0, onMessage: Function0, onOpenDetails: Function0) {
-        // Strings: "C(RecentsSwipeCardItem)P(!1,6,7,5,2)337@13173L297,336@13104L42,335@13046L428,353", "com.example.ui.screens.RecentsSwipeCardItem (RecentsScreen.kt:334)", "CC(remember):RecentsScreen.kt#9igjgp"
-        // Fields: Composer.Companion, SwipeToDismissBoxState.$stable
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changedInstance()
-        // -> Composer.changed()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.rememberedValue()
-        // -> Composer$Companion.getEmpty()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda15.<init>()
-        // -> Composer.updateRememberedValue()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda16.<init>()
-        // -> SwipeToDismissBoxKt.rememberSwipeToDismissBoxState()
-        // -> Integer.valueOf()
-        // -> RecentsScreenKt$RecentsSwipeCardItem$1$1.<init>()
-        // -> EffectsKt.LaunchedEffect()
-        // -> RecentsScreenKt$$ExternalSyntheticLambda17.<init>()
-    }
-
-    fun RecentsSwipeCardItem$lambda$59$lambda$58($onMessage: Function0, $onIncrementReset: Function0, $onRequestDelete: Function1, $group: MergedCallGroup, value: SwipeToDismissBoxValue): Boolean {
-        // Strings: "value"
-        // Fields: RecentsScreenKt$WhenMappings.$EnumSwitchMapping$0
-        // -> Intrinsics.checkNotNullParameter()
-        // -> SwipeToDismissBoxValue.ordinal()
-        // -> Function1.invoke()
-        // -> Function0.invoke()
-        TODO("Decoded 16 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun RecentsSwipeCardItem$lambda$61$lambda$60(totalDistance: Float): Float {
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    @Composable
-    fun RecentsSwipeCardItem$lambda$65($dismissState: SwipeToDismissBoxState, $this$SwipeToDismissBox: RowScope) {
-        // Strings: "$this$SwipeToDismissBox", "C:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsSwipeCardItem.<anonymous> (RecentsScreen.kt:364)", "C73@3429L9:Box.kt#2w3rfo", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(Box)P(2,1,3)72@3384L130:Box.kt#2w3rfo", "366@13934L365", "C374@14193L96:RecentsScreen.kt#2thlc2", "Send Message", "377@14369L355", "C385@14628L86:RecentsScreen.kt#2thlc2", "Delete Call Log"
-        // Fields: SwipeToDismissBoxValue.StartToEnd, Modifier.Companion, Alignment.Companion, ComposeUiNode.Companion, BoxScopeInstance.INSTANCE, Icons$AutoMirrored$Filled.INSTANCE, Color.Companion, SwipeToDismissBoxValue.EndToStart, Icons.INSTANCE, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SwipeToDismissBoxState.getDismissDirection()
-        // -> Composer.startReplaceGroup()
-        // -> SizeKt.fillMaxSize$default()
-        // -> Dp.constructor-impl()
-        // -> RoundedCornerShapeKt.RoundedCornerShape-0680j_4()
-        // -> ClipKt.clip()
-        // -> ColorKt.getDialerGreen()
-        // -> BackgroundKt.background-bw27NRU$default()
-        // -> PaddingKt.padding-VpY3zN4$default()
-        // -> Alignment$Companion.getCenterStart()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> BoxKt.maybeCachedBoxMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-    }
-
-    @Composable
-    fun RecentsSwipeCardItem$lambda$66($group: MergedCallGroup, $onAudioCall: Function0, $onOpenDetails: Function0, $this$SwipeToDismissBox: RowScope) {
-        // Strings: "$this$SwipeToDismissBox", "C390@14749L112:RecentsScreen.kt#2thlc2", "com.example.ui.screens.RecentsSwipeCardItem.<anonymous> (RecentsScreen.kt:390)"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> RecentsScreenKt.XosCallLogCard()
-        // -> ComposerKt.traceEventEnd()
-    }
-
-    @Composable
-    fun RecentsSwipeCardItem$lambda$67(p0: MergedCallGroup, p1: MergedCallGroup, p2: Int, p3: Function1, p4: Function0, p5: Function0, p6: Function0, p7: Function0, p8: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> RecentsScreenKt.RecentsSwipeCardItem()
-    }
-
-    @Composable
-    private fun XosCallLogCard(group: MergedCallGroup, onCallClick: Function0, onDetailsClick: Function0) {
-        // Strings: "C(XosCallLogCard)405@15065L7,406@15113L7,407@15157L7,430@15828L271,429@15787L17,", "com.example.ui.screens.XosCallLogCard (RecentsScreen.kt:404)", "CC:CompositionLocal.kt#9igjgp", "CC(remember):RecentsScreen.kt#9igjgp"
-        // Fields: CallDirection.BLOCKED, CallDirection.MISSED, CallDirection.REJECTED, Modifier.Companion, Composer.Companion
-        // -> Composer.startRestartGroup()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.changedInstance()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> AndroidCompositionLocals_androidKt.getLocalContext()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> Composer.consume()
-        // -> ComposerKt.sourceInformationMarkerEnd()
-        // -> CompositionLocalsKt.getLocalClipboardManager()
-        // -> CompositionLocalsKt.getLocalHapticFeedback()
-        // -> MergedCallGroup.getPrimaryEntry()
-        // -> MergedCallGroup.getMissedCount()
-        // -> MergedCallGroup.getCount()
-        // -> CallLogEntry.getDirection()
-        // -> ColorKt.getDialerBlockedRed()
-        // -> Color.box-impl()
-        // -> ColorKt.getDialerCrimson()
-    }
-
-    fun XosCallLogCard$lambda$69$lambda$68($entry: CallLogEntry, $haptics: HapticFeedback, $clipboard: ClipboardManager, $context: Context) {
-        // Strings: "Copied "
-        // Fields: HapticFeedbackType.Companion, AppToast.INSTANCE, Unit.INSTANCE
-        // -> CallLogEntry.getNumber()
-        // -> StringsKt.trim()
-        // -> Object.toString()
-        // -> StringsKt.isBlank()
-        // -> HapticFeedbackType$Companion.getLongPress-5zf0vsI()
-        // -> HapticFeedback.performHapticFeedback-CdsT49E()
-        // -> AnnotatedString.<init>()
-        // -> ClipboardManager.setText()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> AppToast.show$default()
-    }
-
-    fun XosCallLogCard$lambda$71$lambda$70($onCallClick: Function0) {
-        // Fields: Unit.INSTANCE
-        // -> Function0.invoke()
-    }
-
-    @Composable
-    fun XosCallLogCard$lambda$80($entry: CallLogEntry, $accentRed: Color, $missedCount: Int, $totalCount: Int, $group: MergedCallGroup, $onCallClick: Function0, $onDetailsClick: Function0, $this$LiquidGlassSurface: BoxScope) {
-        // Strings: "$this$LiquidGlassSurface", "C440@16118L6118:RecentsScreen.kt#2thlc2", "com.example.ui.screens.XosCallLogCard.<anonymous> (RecentsScreen.kt:440)", "CC(Row)P(2,1,3)98@4939L58,99@5002L130:Row.kt#2w3rfo", "CC(Layout)P(!1,2)78@3182L23,81@3333L411:Layout.kt#80mrfh", "CC(ReusableComposeNode)P(1,2)376@14062L9:Composables.kt#9igjgp", "C100@5047L9:Row.kt#2w3rfo", "C447@16370L5059,573@21490L740:RecentsScreen.kt#2thlc2", "C453@16614L411,463@17035L4386:RecentsScreen.kt#2thlc2", "458@16818L11", "459@16914L11", "460@16996L11", "CC(Column)P(2,3,1)85@4251L61,86@4317L133:Column.kt#2w3rfo", "C87@4365L9:Column.kt#2w3rfo", "C465@17194L1405,515@19086L2325:RecentsScreen.kt#2thlc2", "C469@17348L347:RecentsScreen.kt#2thlc2"
-        // Fields: Modifier.Companion, Alignment.Companion, Arrangement.INSTANCE, ComposeUiNode.Companion, RowScopeInstance.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, ColumnScopeInstance.INSTANCE, FontWeight.Companion, TextOverflow.Companion, FontStyle.Companion, FontFamily.Companion
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> SizeKt.fillMaxWidth$default()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-qDBjuR0()
-        // -> Alignment$Companion.getCenterVertically()
-        // -> Arrangement.getSpaceBetween()
-        // -> ComposerKt.sourceInformationMarkerStart()
-        // -> RowKt.rowMeasurePolicy()
-        // -> ComposablesKt.getCurrentCompositeKeyHash()
-        // -> Composer.getCurrentCompositionLocalMap()
-        // -> ComposedModifierKt.materializeModifier()
-        // -> ComposeUiNode$Companion.getConstructor()
-        // -> Composer.getApplier()
-        // -> ComposablesKt.invalidApplier()
-        // -> Composer.startReusableNode()
-    }
-
-    @Composable
-    fun XosCallLogCard$lambda$81(p0: MergedCallGroup, p1: Function0, p2: Function0, p3: Int) {
-        // Fields: Unit.INSTANCE
-        // -> RecomposeScopeImplKt.updateChangedFlags()
-        // -> RecentsScreenKt.XosCallLogCard()
-    }
-
-    fun access$RecentsScreen$lambda$1($pendingDeleteGroup$delegate: MutableState): MergedCallGroup {
-        // -> RecentsScreenKt.RecentsScreen$lambda$1()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun access$RecentsScreen$lambda$2($pendingDeleteGroup$delegate: MutableState, <set-?>: MergedCallGroup) {
-        // -> RecentsScreenKt.RecentsScreen$lambda$2()
-    }
-
-    fun access$RecentsScreen$lambda$4($swipeResetCounter$delegate: MutableIntState): Int {
-        // -> RecentsScreenKt.RecentsScreen$lambda$4()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun access$RecentsScreen$lambda$5($swipeResetCounter$delegate: MutableIntState, <set-?>: Int) {
-        // -> RecentsScreenKt.RecentsScreen$lambda$5()
-    }
-
-    @Composable
-    fun access$RecentsSwipeCardItem(group: MergedCallGroup, pendingDeleteGroup: MergedCallGroup, swipeResetCounter: Int, onRequestDelete: Function1, onIncrementReset: Function0, onAudioCall: Function0, onMessage: Function0, onOpenDetails: Function0) {
-        // -> RecentsScreenKt.RecentsSwipeCardItem()
-    }
-
-    private fun formatCallDuration(sec: Long): String {
-        // Strings: "s", "m "
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        TODO("Decoded 24 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    private fun formatRelativeTime(timestampMs: Long): String {
-        // Strings: "Just now", "m ago", "format(...)", "hh:mm a", "MMM d, hh:mm a"
-        // -> System.currentTimeMillis()
-        // -> StringBuilder.<init>()
-        // -> StringBuilder.append()
-        // -> StringBuilder.toString()
-        // -> Locale.getDefault()
-        // -> SimpleDateFormat.<init>()
-        // -> Date.<init>()
-        // -> SimpleDateFormat.format()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        TODO("Decoded 49 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }
 
-object ComposableSingletons$RecentsScreenKt {
-    companion object {
-        var lambda$-1310741281: Function2
-        var lambda$-1464140726: Function2
-        var lambda$-1702410854: Function3
-        var lambda$-180420736: Function2
-        var lambda$-71427783: Function2
-        var lambda$-779533951: Function2
-        var lambda$1845561714: Function3
-        var lambda$188855863: Function3
-        var lambda$197529035: Function3
-        var lambda$2025980808: Function3
-        var lambda$656374207: Function2
-    }
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun RecentCallGroupCard(
+    group: MergedCallGroup,
+    isVideoCallAvailable: Boolean,
+    videoUnavailableReason: String,
+    onAudioCall: () -> Unit,
+    onVideoCall: () -> Unit,
+    onMessage: () -> Unit,
+    onOpenDetails: () -> Unit,
+    onSaveContact: () -> Unit,
+    onToggleBlock: () -> Unit,
+    onRequestDelete: () -> Unit,
+    onSwipeSettledReset: () -> Unit
+) {
+    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    val density = LocalDensity.current
+    val coroutineScope = rememberCoroutineScope()
+    val entry = group.primaryEntry
+    var showContextMenu by remember { mutableStateOf(false) }
 
-    constructor() {
-        // -> Object.<init>()
-    }
+    val swipeOffsetX = remember(group.groupKey) { Animatable(0f) }
+    var cardWidthPx by remember { mutableIntStateOf(1) }
+    val edgeZonePx = with(density) { 64.dp.toPx() }
+    val triggerThresholdRatio = 0.65f
 
-    @Composable
-    fun lambda_1845561714$lambda$4($this$TextButton: RowScope) {
-        // Strings: "$this$TextButton", "C210@8827L28:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$1845561714.<a", "No Filter (Show All)"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onSizeChanged { cardWidthPx = it.width.coerceAtLeast(1) }
+    ) {
+        val curOffset = swipeOffsetX.value
+        val progress = (abs(curOffset) / (cardWidthPx * triggerThresholdRatio).coerceAtLeast(1f)).coerceIn(0f, 1f)
+        if (curOffset > 2f) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(DialerEmerald.copy(alpha = 0.55f + 0.45f * progress))
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Message,
+                        contentDescription = "Send SMS",
+                        tint = Color.White
+                    )
+                    Text(
+                        text = if (progress >= 1f) "Release to Message" else "Message",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        } else if (curOffset < -2f) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(DialerCrimson.copy(alpha = 0.55f + 0.45f * progress))
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = if (progress >= 1f) "Release to Delete" else "Delete",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Call Log",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
 
-    @Composable
-    fun lambda_188855863$lambda$5($this$item: LazyItemScope) {
-        // Strings: "$this$item", "C266@10893L11,264@10810L286:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$188855863.<an", "All Recent Calls"
-        // Fields: MaterialTheme.INSTANCE, MaterialTheme.$stable, FontWeight.Companion, Modifier.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> TextUnitKt.getSp()
-        // -> FontWeight$Companion.getSemiBold()
-        // -> Dp.constructor-impl()
-        // -> PaddingKt.padding-qDBjuR0$default()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(swipeOffsetX.value.roundToInt(), 0) }
+                .pointerInput(group.groupKey, cardWidthPx) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val widthF = cardWidthPx.toFloat().coerceAtLeast(1f)
+                        val startedFromLeftEdge = down.position.x <= edgeZonePx
+                        val startedFromRightEdge = down.position.x >= (widthF - edgeZonePx)
+                        if (!startedFromLeftEdge && !startedFromRightEdge) {
+                            return@awaitEachGesture
+                        }
 
-    @Composable
-    fun lambda_197529035$lambda$6($this$Button: RowScope) {
-        // Strings: "$this$Button", "C311@12488L35:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$197529035.<an", "Delete"
-        // Fields: Color.Companion, Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Color$Companion.getWhite-0d7_KjU()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+                        val slop = viewConfiguration.touchSlop * 1.45f
+                        var totalDx = 0f
+                        var totalDy = 0f
+                        var isHorizontalSwipe = false
 
-    @Composable
-    fun lambda_2025980808$lambda$0($this$Button: RowScope) {
-        // Strings: "$this$Button", "C128@5646L29:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$2025980808.<a", "Grant Call Log Access"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!change.pressed) break
 
-    @Composable
-    fun lambda_656374207$lambda$1() {
-        // Strings: "C163@6818L62:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$656374207.<an", "Search call logs (name or number)..."
-        // Fields: Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextUnitKt.getSp()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+                            val delta = change.positionChange()
+                            totalDx += delta.x
+                            totalDy += delta.y
 
-    @Composable
-    fun lambda__1310741281$lambda$8() {
-        // Strings: "C300@12085L53:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$-1310741281.<", "Delete Call Log"
-        // Fields: FontWeight.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> FontWeight$Companion.getBold()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+                            if (!isHorizontalSwipe) {
+                                // Yield immediately to LazyColumn if vertical scroll dominates
+                                if (abs(totalDy) > slop && abs(totalDy) >= abs(totalDx) * 0.65f) {
+                                    return@awaitEachGesture
+                                }
+                                val movingInward = (startedFromLeftEdge && totalDx > slop) ||
+                                    (startedFromRightEdge && totalDx < -slop)
+                                if (movingInward && abs(totalDx) > abs(totalDy) * 1.85f) {
+                                    isHorizontalSwipe = true
+                                }
+                            }
 
-    @Composable
-    fun lambda__1464140726$lambda$9() {
-        // Strings: "C578@21692L106:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$-1464140726.<", "Dial"
-        // Fields: Icons.INSTANCE, Modifier.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> CallKt.getCall()
-        // -> ColorKt.getDialerGreen()
-        // -> Dp.constructor-impl()
-        // -> SizeKt.size-3ABfNKs()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
+                            if (isHorizontalSwipe) {
+                                change.consume()
+                                val target = if (startedFromLeftEdge) {
+                                    totalDx.coerceIn(0f, widthF * 0.90f)
+                                } else {
+                                    totalDx.coerceIn(-widthF * 0.90f, 0f)
+                                }
+                                coroutineScope.launch {
+                                    swipeOffsetX.snapTo(target)
+                                }
+                            }
+                        }
 
-    @Composable
-    fun lambda__1702410854$lambda$7($this$TextButton: RowScope) {
-        // Strings: "$this$TextButton", "C316@12639L14:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$-1702410854.<", "Cancel"
-        // Fields: Unit.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> TextKt.Text--4IGK_g()
-        // -> ComposerKt.traceEventEnd()
-    }
+                        if (isHorizontalSwipe) {
+                            val thresholdPx = widthF * triggerThresholdRatio
+                            val finalX = swipeOffsetX.value
+                            if (startedFromLeftEdge && finalX >= thresholdPx) {
+                                onMessage()
+                                onSwipeSettledReset()
+                            } else if (startedFromRightEdge && finalX <= -thresholdPx) {
+                                onRequestDelete()
+                                onSwipeSettledReset()
+                            }
+                            coroutineScope.launch {
+                                swipeOffsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                )
+                            }
+                        }
+                    }
+                }
+                .clip(RoundedCornerShape(20.dp))
+                .combinedClickable(
+                    onClick = onOpenDetails,
+                    onLongClick = { showContextMenu = true }
+                )
+                .testTag("recent_group_${group.groupKey}"),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ContactAvatarCircle(
+                        title = entry.displayTitle,
+                        size = 42.dp,
+                        isBlocked = entry.isBlockedNumber,
+                        photoUri = entry.photoUri,
+                        useSilhouetteFallback = true
+                    )
 
-    @Composable
-    fun lambda__180420736$lambda$2() {
-        // Strings: "C168@7034L11,165@6914L201:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$-180420736.<a", "Search call logs"
-        // Fields: Icons.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, Modifier.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> SearchKt.getSearch()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> Dp.constructor-impl()
-        // -> SizeKt.size-3ABfNKs()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        val isMissed = entry.direction == CallDirection.MISSED
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = entry.displayTitle,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.5.sp,
+                                color = if (isMissed) DialerBlockedRed else MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            if (group.unseenMissedCount > 0) {
+                                Text(
+                                    text = "(${group.unseenMissedCount})",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DialerBlockedRed
+                                )
+                            }
+                            if (group.count > 1 || isMissed) {
+                                Text(
+                                    text = "(${group.count})",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
 
-    @Composable
-    fun lambda__71427783$lambda$3() {
-        // Strings: "C175@7255L95:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$-71427783.<an", "Clear search"
-        // Fields: Icons.INSTANCE, Modifier.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> Icons.getDefault()
-        // -> CloseKt.getClose()
-        // -> Dp.constructor-impl()
-        // -> SizeKt.size-3ABfNKs()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
+                        if (entry.cachedName.isNotBlank() && entry.number.isNotBlank()) {
+                            Text(
+                                text = entry.number,
+                                fontSize = 12.5.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
 
-    @Composable
-    fun lambda__779533951$lambda$10() {
-        // Strings: "C587@22127L11,584@21959L253:RecentsScreen.kt#2thlc2", "com.example.ui.screens.ComposableSingletons$RecentsScreenKt.lambda$-779533951.<a", "Call History Details"
-        // Fields: Icons$AutoMirrored$Filled.INSTANCE, MaterialTheme.INSTANCE, MaterialTheme.$stable, Modifier.Companion, Unit.INSTANCE
-        // -> ComposerKt.sourceInformation()
-        // -> Composer.getSkipping()
-        // -> Composer.skipToGroupEnd()
-        // -> ComposerKt.isTraceInProgress()
-        // -> ComposerKt.traceEventStart()
-        // -> KeyboardArrowRightKt.getKeyboardArrowRight()
-        // -> MaterialTheme.getColorScheme()
-        // -> ColorScheme.getOnSurfaceVariant-0d7_KjU()
-        // -> Dp.constructor-impl()
-        // -> SizeKt.size-3ABfNKs()
-        // -> IconKt.Icon-ww6aTOc()
-        // -> ComposerKt.traceEventEnd()
-    }
+                        val timeStr = remember(entry.timestampMillis) {
+                            if (DateUtils.isToday(entry.timestampMillis)) {
+                                SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(entry.timestampMillis))
+                            } else {
+                                SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(Date(entry.timestampMillis))
+                            }
+                        }
+                        val statusSuffix = remember(entry.durationSeconds, entry.direction) {
+                            when {
+                                entry.durationSeconds > 0L -> " • ${formatRecentDuration(entry.durationSeconds)}"
+                                entry.direction == CallDirection.OUTGOING -> " • Didn't connect"
+                                else -> ""
+                            }
+                        }
 
-    fun getLambda$-1310741281$app(): Function2 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$-1310741281
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            CallDirectionIcon(
+                                direction = entry.direction,
+                                isVideoCall = entry.isVideoCall
+                            )
+                            VoLteBoxBadge(
+                                badge = entry.networkBadge,
+                                isHdCall = entry.isHdCall
+                            )
+                            Text(
+                                text = "$timeStr$statusSuffix",
+                                fontSize = 11.5.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            OemSimChip(
+                                slotNumber = entry.simSlotNumber,
+                                label = entry.simCarrierName.ifBlank { entry.simSlotLabel }
+                            )
+                        }
+                    }
+                }
 
-    fun getLambda$-1464140726$app(): Function2 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$-1464140726
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
+                // Right actions: compact green Call icon + ChevronRight >
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    IconButton(
+                        onClick = onAudioCall,
+                        modifier = Modifier
+                            .size(34.dp)
+                            .testTag("recent_call_btn_${group.groupKey}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Call,
+                            contentDescription = "Call ${entry.displayTitle}",
+                            tint = DialerEmerald,
+                            modifier = Modifier.size(19.dp)
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onOpenDetails)
+                            .testTag("recent_details_btn_${group.groupKey}"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Call Details",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
 
-    fun getLambda$-1702410854$app(): Function3 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$-1702410854
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
+                    DropdownMenu(
+                        expanded = showContextMenu,
+                        onDismissRequest = { showContextMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Copy Number (${entry.number})") },
+                            leadingIcon = { Icon(Icons.Default.ContentCopy, contentDescription = null) },
+                            onClick = {
+                                showContextMenu = false
+                                clipboard.setText(AnnotatedString(entry.number))
+                                AppToast.show(context, "Copied ${entry.number}")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = if (isVideoCallAvailable) {
+                                        "Video Call"
+                                    } else {
+                                        "Video Call (Unavailable)"
+                                    }
+                                )
+                            },
+                            leadingIcon = { Icon(Icons.Default.Videocam, contentDescription = null) },
+                            modifier = Modifier.alpha(if (isVideoCallAvailable) 1f else 0.42f),
+                            onClick = {
+                                showContextMenu = false
+                                if (isVideoCallAvailable) {
+                                    onVideoCall()
+                                } else {
+                                    val reason = videoUnavailableReason.ifBlank {
+                                        "Carrier or device does not support video calling"
+                                    }
+                                    AppToast.show(context, "Video call unavailable: $reason")
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Send SMS") },
+                            leadingIcon = { Icon(Icons.AutoMirrored.Filled.Message, contentDescription = null) },
+                            onClick = {
+                                showContextMenu = false
+                                onMessage()
+                            }
+                        )
+                        if (entry.cachedName.isBlank() && entry.number.isNotBlank()) {
+                            DropdownMenuItem(
+                                text = { Text("Add to Contacts") },
+                                leadingIcon = { Icon(Icons.Default.PersonAdd, contentDescription = null) },
+                                onClick = {
+                                    showContextMenu = false
+                                    onSaveContact()
+                                }
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = {
+                                Text(if (entry.isBlockedNumber) "Unblock Number" else "Block Number")
+                            },
+                            leadingIcon = { Icon(Icons.Default.Block, contentDescription = null) },
+                            onClick = {
+                                showContextMenu = false
+                                onToggleBlock()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete Call History", color = DialerCrimson) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Delete, contentDescription = null, tint = DialerCrimson)
+                            },
+                            onClick = {
+                                showContextMenu = false
+                                onRequestDelete()
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
-
-    fun getLambda$-180420736$app(): Function2 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$-180420736
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$-71427783$app(): Function2 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$-71427783
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$-779533951$app(): Function2 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$-779533951
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$1845561714$app(): Function3 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$1845561714
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$188855863$app(): Function3 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$188855863
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$197529035$app(): Function3 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$197529035
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$2025980808$app(): Function3 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$2025980808
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getLambda$656374207$app(): Function2 {
-        // Fields: ComposableSingletons$RecentsScreenKt.lambda$656374207
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }
 
-class RecentsScreenKt$WhenMappings {
-}
-
-class RecentsScreenKt$RecentsSwipeCardItem$1$1 : SuspendLambda(), Function2 {
-    var label: Int
-
-    constructor(p0: MergedCallGroup, p1: SwipeToDismissBoxState) {
-        // Fields: RecentsScreenKt$RecentsSwipeCardItem$1$1.$pendingDeleteGroup, RecentsScreenKt$RecentsSwipeCardItem$1$1.$dismissState
-        // -> SuspendLambda.<init>()
-    }
-
-    suspend fun create(p0: Any): Continuation {
-        // Fields: RecentsScreenKt$RecentsSwipeCardItem$1$1.$pendingDeleteGroup, RecentsScreenKt$RecentsSwipeCardItem$1$1.$dismissState
-        // -> RecentsScreenKt$RecentsSwipeCardItem$1$1.<init>()
-        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> RecentsScreenKt$RecentsSwipeCardItem$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    suspend fun invoke(p0: CoroutineScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsSwipeCardItem$1$1.create()
-        // -> RecentsScreenKt$RecentsSwipeCardItem$1$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "call to 'resume' before 'invoke' with coroutine"
-        // Fields: RecentsScreenKt$RecentsSwipeCardItem$1$1.label, RecentsScreenKt$RecentsSwipeCardItem$1$1.$pendingDeleteGroup, RecentsScreenKt$RecentsSwipeCardItem$1$1.$dismissState, SwipeToDismissBoxValue.Settled, Unit.INSTANCE
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> SwipeToDismissBoxState.getCurrentValue()
-        // -> SwipeToDismissBoxState.reset()
-        TODO("Decoded 32 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$4$1$1 : Function1 {
-    constructor(p0: MutableState) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$1$1.$pendingDeleteGroup$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(p1: Any): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$4$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(it: MergedCallGroup) {
-        // Strings: "it"
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$1$1.$pendingDeleteGroup$delegate
-        // -> Intrinsics.checkNotNullParameter()
-        // -> RecentsScreenKt.access$RecentsScreen$lambda$2()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$4$2$1 : Function0 {
-    constructor(p0: MutableIntState) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$2$1.$swipeResetCounter$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$4$2$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$2$1.$swipeResetCounter$delegate
-        // -> RecentsScreenKt.access$RecentsScreen$lambda$4()
-        // -> RecentsScreenKt.access$RecentsScreen$lambda$5()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$4$3$1 : Function0 {
-    constructor(p0: Function1, p1: MergedCallGroup) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$3$1.$onAudioCall, RecentsScreenKt$RecentsScreen$1$8$1$4$3$1.$group
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$4$3$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$3$1.$onAudioCall, RecentsScreenKt$RecentsScreen$1$8$1$4$3$1.$group
-        // -> MergedCallGroup.getPrimaryEntry()
-        // -> Function1.invoke()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$4$4$1 : Function0 {
-    constructor(p0: Function1, p1: MergedCallGroup) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$4$1.$onMessage, RecentsScreenKt$RecentsScreen$1$8$1$4$4$1.$group
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$4$4$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$4$1.$onMessage, RecentsScreenKt$RecentsScreen$1$8$1$4$4$1.$group
-        // -> MergedCallGroup.getPrimaryEntry()
-        // -> CallLogEntry.getNumber()
-        // -> Function1.invoke()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$4$5$1 : Function0 {
-    constructor(p0: Function1, p1: MergedCallGroup) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$5$1.$onOpenDetails, RecentsScreenKt$RecentsScreen$1$8$1$4$5$1.$group
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$4$5$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$4$5$1.$onOpenDetails, RecentsScreenKt$RecentsScreen$1$8$1$4$5$1.$group
-        // -> Function1.invoke()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$6$1$1 : Function1 {
-    constructor(p0: MutableState) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$1$1.$pendingDeleteGroup$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(p1: Any): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$6$1$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(it: MergedCallGroup) {
-        // Strings: "it"
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$1$1.$pendingDeleteGroup$delegate
-        // -> Intrinsics.checkNotNullParameter()
-        // -> RecentsScreenKt.access$RecentsScreen$lambda$2()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$6$2$1 : Function0 {
-    constructor(p0: MutableIntState) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$2$1.$swipeResetCounter$delegate
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$6$2$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$2$1.$swipeResetCounter$delegate
-        // -> RecentsScreenKt.access$RecentsScreen$lambda$4()
-        // -> RecentsScreenKt.access$RecentsScreen$lambda$5()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$6$3$1 : Function0 {
-    constructor(p0: Function1, p1: MergedCallGroup) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$3$1.$onAudioCall, RecentsScreenKt$RecentsScreen$1$8$1$6$3$1.$group
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$6$3$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$3$1.$onAudioCall, RecentsScreenKt$RecentsScreen$1$8$1$6$3$1.$group
-        // -> MergedCallGroup.getPrimaryEntry()
-        // -> Function1.invoke()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$6$4$1 : Function0 {
-    constructor(p0: Function1, p1: MergedCallGroup) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$4$1.$onMessage, RecentsScreenKt$RecentsScreen$1$8$1$6$4$1.$group
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$6$4$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$4$1.$onMessage, RecentsScreenKt$RecentsScreen$1$8$1$6$4$1.$group
-        // -> MergedCallGroup.getPrimaryEntry()
-        // -> CallLogEntry.getNumber()
-        // -> Function1.invoke()
-    }
-
-}
-
-class RecentsScreenKt$RecentsScreen$1$8$1$6$5$1 : Function0 {
-    constructor(p0: Function1, p1: MergedCallGroup) {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$5$1.$onOpenDetails, RecentsScreenKt$RecentsScreen$1$8$1$6$5$1.$group
-        // -> Object.<init>()
-    }
-
-    fun invoke(): Any {
-        // Fields: Unit.INSTANCE
-        // -> RecentsScreenKt$RecentsScreen$1$8$1$6$5$1.invoke()
-        TODO("Decoded 3 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke() {
-        // Fields: RecentsScreenKt$RecentsScreen$1$8$1$6$5$1.$onOpenDetails, RecentsScreenKt$RecentsScreen$1$8$1$6$5$1.$group
-        // -> Function1.invoke()
-    }
-
+private fun formatRecentDuration(seconds: Long): String {
+    if (seconds < 60L) return "${seconds}s"
+    val mins = seconds / 60L
+    val rem = seconds % 60L
+    return if (rem > 0L) "${mins}m ${rem}s" else "${mins}m"
 }

@@ -1,128 +1,36 @@
-// Reconstructed from APK DEX metadata & bytecode (Color.kt)
 package com.example.ui.theme
 
-class ColorKt {
-    companion object {
-        val AmoledBlack: Long
-        val AmoledBorder: Long
-        val AmoledSurface: Long
-        val AmoledSurfaceVariant: Long
-        val BackgroundLight: Long
-        val BorderLight: Long
-        val DialerAmber: Long
-        val DialerBlockedRed: Long
-        val DialerBlue: Long
-        val DialerCrimson: Long
-        val DialerCyan: Long
-        val DialerGreen: Long
-        val DialerGreenGlow: Long
-        val DialerViolet: Long
-        val SurfaceLight: Long
-        val SurfaceVariantLight: Long
-        val TextPrimaryDark: Long
-        val TextPrimaryLight: Long
-        val TextSecondaryDark: Long
-        val TextSecondaryLight: Long
-    }
+import androidx.compose.ui.graphics.Color
 
-    fun getAmoledBlack(): Long {
-        // Fields: ColorKt.AmoledBlack
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
+val DialerTeal = Color(0xFF00796B)
+val DialerTealDark = Color(0xFF005B4F)
+val DialerTealLight = Color(0xFFADECEE)
+val DialerTealContainer = Color(0xFFDFF1EF)
+val DialerEmerald = Color(0xFF009944)
+val DialerEmeraldBright = Color(0xFF00A859)
+val DialerEmeraldBadge = Color(0xFF00995C)
 
-    fun getAmoledBorder(): Long {
-        // Fields: ColorKt.AmoledBorder
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
+val DialerGreen = Color(0xFF009944)
+val DialerGreenDark = Color(0xFF00796B)
+val DialerBlue = Color(0xFF2196F3)
+val DialerCyan = Color(0xFF00897B)
+val DialerPurple = Color(0xFF7E22CE)
+val DialerCrimson = Color(0xFFF43F5E)
+val DialerBlockedRed = Color(0xFFE53935)
+val DialerAmber = Color(0xFFFFB300)
 
-    fun getAmoledSurface(): Long {
-        // Fields: ColorKt.AmoledSurface
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
+val AmoledBlack = Color(0xFF000000)
+val AmoledSurface = Color(0xFF0E1016)
+val AmoledCard = Color(0xFF171A23)
 
-    fun getAmoledSurfaceVariant(): Long {
-        // Fields: ColorKt.AmoledSurfaceVariant
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
+val LightBackground = Color(0xFFF5F8FA)
+val LightSurface = Color(0xFFFFFFFF)
+val LightCard = Color(0xFFEEF2F7)
+val LightNavBar = Color(0xFFEBF1F2)
+val LightNavIndicator = Color(0xFFB9DFDF)
+val LightChipBorder = Color(0xFFCBD5E1)
+val LightDivider = Color(0xFFE2E8F0)
+val LightIconCircleTint = Color(0xFFD9EAE8)
 
-    fun getBackgroundLight(): Long {
-        // Fields: ColorKt.BackgroundLight
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getBorderLight(): Long {
-        // Fields: ColorKt.BorderLight
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerAmber(): Long {
-        // Fields: ColorKt.DialerAmber
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerBlockedRed(): Long {
-        // Fields: ColorKt.DialerBlockedRed
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerBlue(): Long {
-        // Fields: ColorKt.DialerBlue
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerCrimson(): Long {
-        // Fields: ColorKt.DialerCrimson
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerCyan(): Long {
-        // Fields: ColorKt.DialerCyan
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerGreen(): Long {
-        // Fields: ColorKt.DialerGreen
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerGreenGlow(): Long {
-        // Fields: ColorKt.DialerGreenGlow
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getDialerViolet(): Long {
-        // Fields: ColorKt.DialerViolet
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSurfaceLight(): Long {
-        // Fields: ColorKt.SurfaceLight
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getSurfaceVariantLight(): Long {
-        // Fields: ColorKt.SurfaceVariantLight
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getTextPrimaryDark(): Long {
-        // Fields: ColorKt.TextPrimaryDark
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getTextPrimaryLight(): Long {
-        // Fields: ColorKt.TextPrimaryLight
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getTextSecondaryDark(): Long {
-        // Fields: ColorKt.TextSecondaryDark
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun getTextSecondaryLight(): Long {
-        // Fields: ColorKt.TextSecondaryLight
-        TODO("Decoded 2 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
+val GlassWhiteBorder = Color(0x26FFFFFF)
+val GlassDarkBorder = Color(0x1A000000)

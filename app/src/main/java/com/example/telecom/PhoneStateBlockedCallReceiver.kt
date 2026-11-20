@@ -1,80 +1,82 @@
-// Reconstructed from APK DEX metadata & bytecode (PhoneStateBlockedCallReceiver.kt)
 package com.example.telecom
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.telecom.TelecomManager
+import android.telephony.TelephonyManager
+import com.example.data.AppPreferences
+import com.example.repository.BlocklistRepository
+import com.example.repository.CallLogRepository
+import com.example.util.PermissionHelper
+import com.example.util.PrivilegeHelper
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class PhoneStateBlockedCallReceiver : BroadcastReceiver() {
-    constructor() {
-        // -> BroadcastReceiver.<init>()
+    @SuppressLint("MissingPermission")
+    override fun onReceive(context: Context, intent: Intent?) {
+        if (intent?.action != TelephonyManager.ACTION_PHONE_STATE_CHANGED) return
+        val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+        if (state != TelephonyManager.EXTRA_STATE_RINGING) return
+
+        val appContext = context.applicationContext
+
+        // On Android 10+, DialerCallScreeningService normally screens calls, but Android's
+        // BlockedNumberContract can silently reject at Telecom level without invoking CallScreeningService.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && PrivilegeHelper.isCallScreeningHold(context)) {
+            val pending = goAsync()
+            CoroutineScope(Dispatchers.IO).launch {
+                runCatching {
+                    delay(700L)
+                    WaitingCallNotificationManager.checkAndNotifyRecentBlockedCallLog(appContext)
+                }
+                pending.finish()
+            }
+            return
+        }
+
+        @Suppress("DEPRECATION")
+        val incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER).orEmpty().trim()
+        if (incomingNumber.isBlank()) return
+
+        val blockRepo = BlocklistRepository(appContext)
+        if (!blockRepo.isNumberBlocked(incomingNumber)) return
+
+        var ended = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            PermissionHelper.hasAnswerPhoneCallsPermission(appContext)
+        ) {
+            val tm = appContext.getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
+            ended = runCatching { tm?.endCall() == true }.getOrDefault(false)
+        }
+
+        if (ended) {
+            val (name, photoUri) = WaitingCallNotificationManager.lookupContactNameAndPhoto(appContext, incomingNumber)
+            WaitingCallNotificationManager.showBlockedCallNotification(
+                context = appContext,
+                number = incomingNumber,
+                callerName = name,
+                photoUri = photoUri
+            )
+            CallStateManager.emitCallLogSyncTick()
+            val pending = goAsync()
+            CoroutineScope(Dispatchers.IO).launch {
+                runCatching {
+                    delay(550L)
+                    val logRepo = CallLogRepository(appContext)
+                    if (!logRepo.hasRecentBlockedLogForNumber(incomingNumber)) {
+                        logRepo.insertBlockedCallLogEntry(incomingNumber, name)
+                    }
+                    WaitingCallNotificationManager.checkAndNotifyRecentBlockedCallLog(appContext)
+                    CallStateManager.emitCallLogSyncTick()
+                }
+                pending.finish()
+            }
+        }
     }
-
-    fun onReceive(context: Context, intent: Intent) {
-        // Strings: "context", "android.intent.action.PHONE_STATE", "state", "incoming_number"
-        // Fields: AppPreferences.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Intent.getAction()
-        // -> Intrinsics.areEqual()
-        // -> Context.getApplicationContext()
-        // -> Intrinsics.checkNotNull()
-        // -> AppPreferences.init()
-        // -> Intent.getStringExtra()
-        // -> PhoneStateBlockedCallReceiver.goAsync()
-        // -> SupervisorKt.SupervisorJob$default()
-        // -> Dispatchers.getIO()
-        // -> CompletableJob.plus()
-        // -> CoroutineScopeKt.CoroutineScope()
-        // -> PhoneStateBlockedCallReceiver$onReceive$1.<init>()
-        // -> BuildersKt.launch$default()
-    }
-
-}
-
-class PhoneStateBlockedCallReceiver$onReceive$1 : SuspendLambda(), Function2 {
-    var label: Int
-
-    constructor(p0: String, p1: String, p2: Context, p3: BroadcastReceiver$PendingResult) {
-        // Fields: PhoneStateBlockedCallReceiver$onReceive$1.$state, PhoneStateBlockedCallReceiver$onReceive$1.$incomingNumber, PhoneStateBlockedCallReceiver$onReceive$1.$appCtx, PhoneStateBlockedCallReceiver$onReceive$1.$pendingResult
-        // -> SuspendLambda.<init>()
-    }
-
-    suspend fun create(p0: Any): Continuation {
-        // Fields: PhoneStateBlockedCallReceiver$onReceive$1.$state, PhoneStateBlockedCallReceiver$onReceive$1.$incomingNumber, PhoneStateBlockedCallReceiver$onReceive$1.$appCtx, PhoneStateBlockedCallReceiver$onReceive$1.$pendingResult
-        // -> PhoneStateBlockedCallReceiver$onReceive$1.<init>()
-        TODO("Decoded 9 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> PhoneStateBlockedCallReceiver$onReceive$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    suspend fun invoke(p0: CoroutineScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> PhoneStateBlockedCallReceiver$onReceive$1.create()
-        // -> PhoneStateBlockedCallReceiver$onReceive$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "call to 'resume' before 'invoke' with coroutine"
-        // Fields: PhoneStateBlockedCallReceiver$onReceive$1.label, PhoneStateBlockedCallReceiver$onReceive$1.$state, TelephonyManager.EXTRA_STATE_RINGING, PhoneStateBlockedCallReceiver$onReceive$1.$incomingNumber, BlocklistRepository.INSTANCE, PhoneStateBlockedCallReceiver$onReceive$1.$appCtx, WaitingCallNotificationManager.INSTANCE, BlocklistSyncJobService.Companion, PhoneStateBlockedCallReceiver$onReceive$1.$pendingResult, Unit.INSTANCE
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> Intrinsics.areEqual()
-        // -> StringsKt.isBlank()
-        // -> Intrinsics.checkNotNull()
-        // -> BlocklistRepository.isBlocked()
-        // -> WaitingCallNotificationManager.showBlockedCallNotification$default()
-        // -> DelayKt.delay()
-        // -> WaitingCallNotificationManager.reconcileBlockedCallsFromCallLog()
-        // -> BlocklistRepository.loadAndSyncBlockedNumbers()
-        // -> BlocklistSyncJobService$Companion.schedule()
-        // -> BroadcastReceiver$PendingResult.finish()
-        TODO("Decoded 96 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }

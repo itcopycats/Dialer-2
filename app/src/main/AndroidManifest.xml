@@ -1,329 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="2"
-    android:versionName="2.0"
-    android:compileSdkVersion="36"
-    android:compileSdkVersionCodename="16"
-    package="com.aistudio.firelimit.krvpx"
-    platformBuildVersionCode="36"
-    platformBuildVersionName="16">
-    <uses-sdk
-        android:minSdkVersion="24"
-        android:targetSdkVersion="36">
-    </uses-sdk>
-    <uses-permission android:name="android.permission.READ_CALL_LOG">
-    </uses-permission>
-    <uses-permission android:name="android.permission.WRITE_CALL_LOG">
-    </uses-permission>
-    <uses-permission android:name="android.permission.READ_CONTACTS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.WRITE_CONTACTS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.CALL_PHONE">
-    </uses-permission>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE">
-    </uses-permission>
-    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.READ_SMS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.RECORD_AUDIO">
-    </uses-permission>
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT">
-    </uses-permission>
-    <uses-permission android:name="android.permission.CAMERA">
-    </uses-permission>
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false">
-    </uses-feature>
+    xmlns:tools="http://schemas.android.com/tools">
+
     <uses-feature
         android:name="android.hardware.telephony"
-        android:required="false">
-    </uses-feature>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW">
-    </uses-permission>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS">
-    </uses-permission>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE">
-    </uses-permission>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL">
-    </uses-permission>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE">
-    </uses-permission>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE">
-    </uses-permission>
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT">
-    </uses-permission>
-    <uses-permission android:name="android.permission.WAKE_LOCK">
-    </uses-permission>
-    <uses-permission android:name="android.permission.VIBRATE">
-    </uses-permission>
-    <uses-permission android:name="moe.shizuku.manager.permission.API_V23">
-    </uses-permission>
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission
+        android:name="android.permission.CAPTURE_AUDIO_OUTPUT"
+        tools:ignore="ProtectedPermissions" />
+
     <queries>
-        <package android:name="moe.shizuku.privileged.api">
-        </package>
+        <package android:name="moe.shizuku.privileged.api" />
         <intent>
-            <action android:name="android.intent.action.SENDTO">
-            </action>
-            <data android:scheme="smsto">
-            </data>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="smsto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="vnd.android-dir/mms-sms" />
         </intent>
     </queries>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE">
-    </uses-permission>
-    <uses-permission android:name="android.permission.INTERNET">
-    </uses-permission>
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES">
-    </uses-permission>
-    <permission
-        android:name="com.aistudio.firelimit.krvpx.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-        android:protectionLevel="0x2">
-    </permission>
-    <uses-permission android:name="com.aistudio.firelimit.krvpx.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION">
-    </uses-permission>
+
     <application
-        android:theme="@style/Theme.MyApplication"
-        android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:debuggable="true"
         android:allowBackup="true"
-        android:supportsRtl="true"
-        android:extractNativeLibs="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-        android:dataExtractionRules="@xml/data_extraction_rules">
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Dialer">
+
         <activity
-            android:theme="@style/Theme.MyApplication"
-            android:label="@string/app_name"
             android:name="com.example.MainActivity"
             android:exported="true"
-            android:launchMode="1"
-            android:windowSoftInputMode="0x10">
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN">
-                </action>
-                <category android:name="android.intent.category.LAUNCHER">
-                </category>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.DIAL">
-                </action>
-                <category android:name="android.intent.category.DEFAULT">
-                </category>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.DIAL">
-                </action>
-                <category android:name="android.intent.category.DEFAULT">
-                </category>
-                <data android:scheme="tel">
-                </data>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="tel" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW">
-                </action>
-                <category android:name="android.intent.category.DEFAULT">
-                </category>
-                <category android:name="android.intent.category.BROWSABLE">
-                </category>
-                <data android:scheme="tel">
-                </data>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="tel" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.CALL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="tel" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.CALL_BUTTON" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="vnd.android.cursor.dir/calls" />
             </intent-filter>
         </activity>
+
         <activity
-            android:theme="@style/Theme.Dialer.InCall"
             android:name="com.example.ui.InCallActivity"
-            android:exported="false"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
             android:excludeFromRecents="true"
-            android:launchMode="3"
-            android:configChanges="0xd80"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:showOnLockScreen="true"
             android:showWhenLocked="true"
-            android:turnScreenOn="true">
-        </activity>
+            android:taskAffinity=""
+            android:theme="@style/Theme.Dialer.InCall"
+            android:turnScreenOn="true" />
+
         <service
             android:name="com.example.telecom.DialerInCallService"
-            android:permission="android.permission.BIND_INCALL_SERVICE"
-            android:exported="true">
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="phoneCall|microphone"
+            android:permission="android.permission.BIND_INCALL_SERVICE">
             <meta-data
                 android:name="android.telecom.IN_CALL_SERVICE_UI"
-                android:value="true">
-            </meta-data>
+                android:value="true" />
             <meta-data
                 android:name="android.telecom.IN_CALL_SERVICE_RINGING"
-                android:value="true">
-            </meta-data>
+                android:value="true" />
+            <meta-data
+                android:name="android.telecom.INCLUDE_EXTERNAL_CALLS"
+                android:value="true" />
             <intent-filter>
-                <action android:name="android.telecom.InCallService">
-                </action>
+                <action android:name="android.telecom.InCallService" />
             </intent-filter>
         </service>
-        <service
-            android:name="com.example.telecom.DialerCallScreeningService"
-            android:permission="android.permission.BIND_SCREENING_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.telecom.CallScreeningService">
-                </action>
-            </intent-filter>
-        </service>
+
         <service
             android:name="com.example.telecom.FloatingCallOverlayService"
-            android:exported="false"
-            android:foregroundServiceType="0x40000084">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Floating XOS-style incoming/active call window overlay and controls">
-            </property>
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name="com.example.telecom.DialerCallScreeningService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService" />
+            </intent-filter>
         </service>
-        <receiver
-            android:name="com.example.telecom.CallActionReceiver"
-            android:exported="false">
-        </receiver>
+
         <service
             android:name="com.example.telecom.BlocklistSyncJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="false">
-        </service>
-        <receiver
-            android:name="com.example.telecom.MissedCallReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.telecom.action.SHOW_MISSED_CALLS_NOTIFICATION">
-                </action>
-            </intent-filter>
-        </receiver>
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <receiver
             android:name="com.example.telecom.PhoneStateBlockedCallReceiver"
+            android:enabled="true"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE">
-                </action>
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name="com.example.telecom.CallActionReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.telecom.ACTION_ANSWER_WAITING" />
+                <action android:name="com.example.telecom.ACTION_END_AND_ACCEPT_WAITING" />
+                <action android:name="com.example.telecom.ACTION_DECLINE_WAITING" />
+                <action android:name="com.example.telecom.ACTION_SILENCE_WAITING" />
+                <action android:name="com.example.telecom.ACTION_OPEN_INCALL" />
+                <action android:name="com.example.telecom.ACTION_ANSWER_PRIMARY" />
+                <action android:name="com.example.telecom.ACTION_DECLINE_PRIMARY" />
+                <action android:name="com.example.telecom.ACTION_HANGUP_PRIMARY" />
+                <action android:name="com.example.telecom.ACTION_TOGGLE_MUTE_PRIMARY" />
+                <action android:name="com.example.telecom.ACTION_TOGGLE_SPEAKER_PRIMARY" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.example.telecom.MissedCallReceiver"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.telecom.action.SHOW_MISSED_CALLS_NOTIFICATION" />
+                <action android:name="com.example.telecom.ACTION_CALLBACK_MISSED" />
+                <action android:name="com.example.telecom.ACTION_MESSAGE_MISSED" />
+                <action android:name="com.example.telecom.ACTION_DISMISS_MISSED" />
+                <action android:name="com.example.telecom.ACTION_MISSED_CALL_REMINDER" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:authorities="com.aistudio.firelimit.krvpx.fileprovider"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths">
-            </meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
-        <activity
-            android:name="androidx.compose.ui.tooling.PreviewActivity"
-            android:exported="true">
-        </activity>
-        <activity
-            android:name="androidx.activity.ComponentActivity"
-            android:exported="true">
-        </activity>
-        <service
-            android:name="com.google.firebase.components.ComponentDiscoveryService"
-            android:exported="false"
-            android:directBootAware="true">
-            <meta-data
-                android:name="com.google.firebase.components:com.google.firebase.appcheck.debug.FirebaseAppCheckDebugRegistrar"
-                android:value="com.google.firebase.components.ComponentRegistrar">
-            </meta-data>
-            <meta-data
-                android:name="com.google.firebase.components:com.google.firebase.appcheck.recaptcha.FirebaseAppCheckRecaptchaRegistrar"
-                android:value="com.google.firebase.components.ComponentRegistrar">
-            </meta-data>
-            <meta-data
-                android:name="com.google.firebase.components:com.google.firebase.ai.FirebaseAIRegistrar"
-                android:value="com.google.firebase.components.ComponentRegistrar">
-            </meta-data>
-            <meta-data
-                android:name="com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckKtxRegistrar"
-                android:value="com.google.firebase.components.ComponentRegistrar">
-            </meta-data>
-            <meta-data
-                android:name="com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckRegistrar"
-                android:value="com.google.firebase.components.ComponentRegistrar">
-            </meta-data>
-            <meta-data
-                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
-                android:value="com.google.firebase.components.ComponentRegistrar">
-            </meta-data>
-        </service>
-        <activity
-            android:theme="@android:0x01030010"
-            android:name="com.google.android.gms.common.api.GoogleApiActivity"
-            android:exported="false">
-        </activity>
-        <provider
-            android:name="com.google.firebase.provider.FirebaseInitProvider"
-            android:exported="false"
-            android:authorities="com.aistudio.firelimit.krvpx.firebaseinitprovider"
-            android:initOrder="100"
-            android:directBootAware="true">
-        </provider>
-        <service
-            android:name="androidx.room.MultiInstanceInvalidationService"
-            android:exported="false"
-            android:directBootAware="true">
-        </service>
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:exported="false"
-            android:authorities="com.aistudio.firelimit.krvpx.androidx-startup">
-            <meta-data
-                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-                android:value="androidx.startup">
-            </meta-data>
-            <meta-data
-                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-                android:value="androidx.startup">
-            </meta-data>
-            <meta-data
-                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-                android:value="androidx.startup">
-            </meta-data>
-        </provider>
-        <receiver
-            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-            android:permission="android.permission.DUMP"
-            android:enabled="true"
-            android:exported="true"
-            android:directBootAware="false">
-            <intent-filter>
-                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="androidx.profileinstaller.action.SKIP_FILE">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION">
-                </action>
-            </intent-filter>
-        </receiver>
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version">
-        </meta-data>
-        <activity
-            android:theme="@style/Theme.PlayCore.Transparent"
-            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
-            android:exported="false"
-            android:stateNotNeeded="true">
-        </activity>
+
     </application>
+
 </manifest>

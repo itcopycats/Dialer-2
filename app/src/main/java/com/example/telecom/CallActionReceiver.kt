@@ -1,67 +1,41 @@
-// Reconstructed from APK DEX metadata & bytecode (CallActionReceiver.kt)
 package com.example.telecom
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.example.ui.InCallActivity
 
 class CallActionReceiver : BroadcastReceiver() {
     companion object {
-        val ACTION_ANSWER_FLOATING: String = "com.example.dialer.ACTION_ANSWER_FLOATING"
-        val ACTION_ANSWER_FULLSCREEN: String = "com.example.dialer.ACTION_ANSWER_FULLSCREEN"
-        val ACTION_ANSWER_PRIMARY: String = "com.example.dialer.ACTION_ANSWER_PRIMARY"
-        val ACTION_CALL_BACK: String = "com.example.dialer.ACTION_CALL_BACK"
-        val ACTION_CLEAR_BLOCKED_NOTIF: String = "com.example.dialer.ACTION_CLEAR_BLOCKED_NOTIF"
-        val ACTION_DECLINE_PRIMARY: String = "com.example.dialer.ACTION_DECLINE_PRIMARY"
-        val ACTION_END_AND_ANSWER: String = "com.example.dialer.ACTION_END_AND_ANSWER"
-        val ACTION_END_PRIMARY: String = "com.example.dialer.ACTION_END_PRIMARY"
-        val ACTION_HOLD_AND_ANSWER: String = "com.example.dialer.ACTION_HOLD_AND_ANSWER"
-        val ACTION_REJECT_WAITING: String = "com.example.dialer.ACTION_REJECT_WAITING"
-        val ACTION_TOGGLE_MUTE: String = "com.example.dialer.ACTION_TOGGLE_MUTE"
-        val ACTION_TOGGLE_SPEAKER: String = "com.example.dialer.ACTION_TOGGLE_SPEAKER"
-        val Companion: CallActionReceiver$Companion = null
-        val EXTRA_BLOCKED_KEY: String = "extra_blocked_key"
-        val EXTRA_NOTIF_ID: String = "extra_notif_id"
-        val EXTRA_NUMBER: String = "extra_number"
+        const val ACTION_ANSWER_WAITING = "com.example.telecom.ACTION_ANSWER_WAITING"
+        const val ACTION_END_AND_ACCEPT_WAITING = "com.example.telecom.ACTION_END_AND_ACCEPT_WAITING"
+        const val ACTION_DECLINE_WAITING = "com.example.telecom.ACTION_DECLINE_WAITING"
+        const val ACTION_SILENCE_WAITING = "com.example.telecom.ACTION_SILENCE_WAITING"
+        const val ACTION_OPEN_INCALL = "com.example.telecom.ACTION_OPEN_INCALL"
+        const val ACTION_ANSWER_PRIMARY = "com.example.telecom.ACTION_ANSWER_PRIMARY"
+        const val ACTION_DECLINE_PRIMARY = "com.example.telecom.ACTION_DECLINE_PRIMARY"
+        const val ACTION_HANGUP_PRIMARY = "com.example.telecom.ACTION_HANGUP_PRIMARY"
+        const val ACTION_TOGGLE_MUTE_PRIMARY = "com.example.telecom.ACTION_TOGGLE_MUTE_PRIMARY"
+        const val ACTION_TOGGLE_SPEAKER_PRIMARY = "com.example.telecom.ACTION_TOGGLE_SPEAKER_PRIMARY"
     }
 
-    constructor() {
-        // -> BroadcastReceiver.<init>()
+    override fun onReceive(context: Context, intent: Intent?) {
+        when (intent?.action) {
+            ACTION_ANSWER_WAITING -> CallStateManager.answerWaitingCallHoldActive()
+            ACTION_END_AND_ACCEPT_WAITING -> CallStateManager.endActiveAndAcceptWaitingCall()
+            ACTION_DECLINE_WAITING -> CallStateManager.declineWaitingCall()
+            ACTION_SILENCE_WAITING -> CallStateManager.silenceWaitingCallTone()
+            ACTION_OPEN_INCALL -> {
+                CallStateManager.setFloatingMinimized(false)
+                val open = Intent(context, InCallActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                runCatching { context.startActivity(open) }
+            }
+            ACTION_ANSWER_PRIMARY -> CallStateManager.answerPrimaryCall(asVideoCall = false)
+            ACTION_DECLINE_PRIMARY, ACTION_HANGUP_PRIMARY -> CallStateManager.declineOrHangupPrimaryCall()
+            ACTION_TOGGLE_MUTE_PRIMARY -> CallStateManager.toggleMute()
+            ACTION_TOGGLE_SPEAKER_PRIMARY -> CallStateManager.cycleOrToggleSpeaker()
+        }
     }
-
-    fun onReceive(context: Context, intent: Intent) {
-        // Strings: "context", "com.example.dialer.ACTION_HOLD_AND_ANSWER", "com.example.dialer.ACTION_DECLINE_PRIMARY", "com.example.dialer.ACTION_END_AND_ANSWER", "com.example.dialer.ACTION_REJECT_WAITING", "com.example.dialer.ACTION_TOGGLE_MUTE", "com.example.dialer.ACTION_CLEAR_BLOCKED_NOTIF", "com.example.dialer.ACTION_ANSWER_FLOATING", "com.example.dialer.ACTION_CALL_BACK", "extra_number", "extra_notif_id", "notification", "null cannot be cast to non-null type android.app.NotificationManager", "com.example.dialer.ACTION_ANSWER_PRIMARY", "com.example.dialer.ACTION_TOGGLE_SPEAKER", "com.example.dialer.ACTION_ANSWER_FULLSCREEN"
-        // Fields: CallStateManager.INSTANCE
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Intent.getAction()
-        // -> String.hashCode()
-        // -> String.equals()
-        // -> CallStateManager.holdActiveAndAnswerWaiting()
-        // -> CallStateManager.declineOrEndPrimaryCall()
-        // -> CallStateManager.endActiveAndAnswerWaiting()
-        // -> CallStateManager.rejectWaitingCall()
-        // -> CallStateManager.toggleMute()
-        // -> Boolean.valueOf()
-        // -> CallStateManager.answerPrimaryCall$default()
-        // -> Intent.getStringExtra()
-        // -> Intent.getIntExtra()
-        // -> Context.getSystemService()
-        // -> Intrinsics.checkNotNull()
-        // -> NotificationManager.cancel()
-        // -> StringsKt.isBlank()
-        // -> CallStateManager.placeCall$default()
-        // -> CallStateManager.toggleSpeaker()
-    }
-
-}
-
-class CallActionReceiver$Companion {
-    private constructor() {
-        // -> Object.<init>()
-    }
-
-    constructor(p0: DefaultConstructorMarker) {
-        // -> CallActionReceiver$Companion.<init>()
-    }
-
 }

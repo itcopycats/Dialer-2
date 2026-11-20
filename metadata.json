@@ -1,0 +1,6 @@
+{
+  "name": "Phone",
+  "description": "HyperXOS Phone app with dual-SIM routing, liquid glass UI, call screening, call recording, and contact management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

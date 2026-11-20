@@ -1,116 +1,86 @@
-// Reconstructed from APK DEX metadata & bytecode (BlocklistSyncJobService.kt)
 package com.example.telecom
 
+import android.app.job.JobInfo
 import android.app.job.JobParameters
+import android.app.job.JobScheduler
 import android.app.job.JobService
+import android.content.ComponentName
 import android.content.Context
+import android.os.Build
+import android.provider.BlockedNumberContract
+import android.provider.CallLog
+import com.example.repository.BlocklistRepository
+import com.example.util.PrivilegeHelper
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class BlocklistSyncJobService : JobService() {
+    private val jobScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     companion object {
-        val Companion: BlocklistSyncJobService$Companion = null
-        val JOB_ID_BLOCKLIST_TRIGGER: Int = 4901
+        private const val JOB_ID_BLOCKLIST_SYNC = 8801
+        private const val JOB_ID_CALL_LOG_BLOCKED_WATCH = 8802
+
+        fun scheduleSyncWatch(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return
+            val js = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler ?: return
+            val component = ComponentName(context, BlocklistSyncJobService::class.java)
+
+            if (PrivilegeHelper.isDefaultDialer(context)) {
+                runCatching {
+                    val triggerUri = JobInfo.TriggerContentUri(
+                        BlockedNumberContract.BlockedNumbers.CONTENT_URI,
+                        JobInfo.TriggerContentUri.FLAG_NOTIFY_FOR_DESCENDANTS
+                    )
+                    val jobInfo = JobInfo.Builder(JOB_ID_BLOCKLIST_SYNC, component)
+                        .addTriggerContentUri(triggerUri)
+                        .setTriggerContentUpdateDelay(0L)
+                        .setTriggerContentMaxDelay(100L)
+                        .build()
+                    js.schedule(jobInfo)
+                }
+            }
+
+            runCatching {
+                val callLogTrigger = JobInfo.TriggerContentUri(
+                    CallLog.Calls.CONTENT_URI,
+                    JobInfo.TriggerContentUri.FLAG_NOTIFY_FOR_DESCENDANTS
+                )
+                val callLogJob = JobInfo.Builder(JOB_ID_CALL_LOG_BLOCKED_WATCH, component)
+                    .addTriggerContentUri(callLogTrigger)
+                    .setTriggerContentUpdateDelay(0L)
+                    .setTriggerContentMaxDelay(150L)
+                    .build()
+                js.schedule(callLogJob)
+            }
+        }
     }
 
-    val scope: CoroutineScope
-
-    constructor() {
-        // Fields: BlocklistSyncJobService.scope
-        // -> JobService.<init>()
-        // -> SupervisorKt.SupervisorJob$default()
-        // -> Dispatchers.getIO()
-        // -> CompletableJob.plus()
-        // -> CoroutineScopeKt.CoroutineScope()
+    override fun onStartJob(params: JobParameters?): Boolean {
+        jobScope.launch {
+            runCatching {
+                when (params?.jobId) {
+                    JOB_ID_CALL_LOG_BLOCKED_WATCH -> {
+                        WaitingCallNotificationManager.checkAndNotifyRecentBlockedCallLog(applicationContext)
+                        CallStateManager.emitCallLogSyncTick()
+                    }
+                    else -> {
+                        BlocklistRepository(applicationContext).syncWithSystemBlockedNumbers()
+                        WaitingCallNotificationManager.checkAndNotifyRecentBlockedCallLog(applicationContext)
+                    }
+                }
+            }
+            scheduleSyncWatch(applicationContext)
+            jobFinished(params, false)
+        }
+        return true
     }
 
-    fun onStartJob(params: JobParameters): Boolean {
-        // Strings: "getApplicationContext(...)"
-        // Fields: AppPreferences.INSTANCE, BlocklistSyncJobService.scope
-        // -> BlocklistSyncJobService.getApplicationContext()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> AppPreferences.init()
-        // -> BlocklistSyncJobService$onStartJob$1.<init>()
-        // -> BuildersKt.launch$default()
-        TODO("Decoded 19 Dalvik instructions; see decompiled_bytecode/")
+    override fun onStopJob(params: JobParameters?): Boolean {
+        jobScope.cancel()
+        return true
     }
-
-    fun onStopJob(params: JobParameters): Boolean {
-        // Fields: BlocklistSyncJobService.scope
-        // -> CoroutineScopeKt.cancel$default()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-}
-
-class BlocklistSyncJobService$Companion {
-    private constructor() {
-        // -> Object.<init>()
-    }
-
-    constructor(p0: DefaultConstructorMarker) {
-        // -> BlocklistSyncJobService$Companion.<init>()
-    }
-
-    fun schedule(context: Context) {
-        // Strings: "context", "jobscheduler"
-        // Fields: Result.Companion, BlockedNumberContract$BlockedNumbers.CONTENT_URI, CallLog$Calls.CONTENT_URI
-        // -> Intrinsics.checkNotNullParameter()
-        // -> Context.getSystemService()
-        // -> ComponentName.<init>()
-        // -> JobInfo$TriggerContentUri.<init>()
-        // -> JobInfo$Builder.<init>()
-        // -> JobInfo$Builder.addTriggerContentUri()
-        // -> JobInfo$Builder.setTriggerContentUpdateDelay()
-        // -> JobInfo$Builder.setTriggerContentMaxDelay()
-        // -> JobInfo$Builder.build()
-        // -> JobScheduler.schedule()
-        // -> Integer.valueOf()
-        // -> Result.constructor-impl()
-        // -> ResultKt.createFailure()
-    }
-
-}
-
-class BlocklistSyncJobService$onStartJob$1 : SuspendLambda(), Function2 {
-    var label: Int
-    val this$0: BlocklistSyncJobService
-
-    constructor(p0: BlocklistSyncJobService, p1: JobParameters) {
-        // Fields: BlocklistSyncJobService$onStartJob$1.this$0, BlocklistSyncJobService$onStartJob$1.$params
-        // -> SuspendLambda.<init>()
-    }
-
-    suspend fun create(p0: Any): Continuation {
-        // Fields: BlocklistSyncJobService$onStartJob$1.this$0, BlocklistSyncJobService$onStartJob$1.$params
-        // -> BlocklistSyncJobService$onStartJob$1.<init>()
-        TODO("Decoded 6 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invoke(p0: Any, p1: Any): Any {
-        // -> BlocklistSyncJobService$onStartJob$1.invoke()
-        TODO("Decoded 5 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    suspend fun invoke(p0: CoroutineScope): Any {
-        // Fields: Unit.INSTANCE
-        // -> BlocklistSyncJobService$onStartJob$1.create()
-        // -> BlocklistSyncJobService$onStartJob$1.invokeSuspend()
-        TODO("Decoded 7 Dalvik instructions; see decompiled_bytecode/")
-    }
-
-    fun invokeSuspend($result: Any): Any {
-        // Strings: "getApplicationContext(...)", "call to 'resume' before 'invoke' with coroutine"
-        // Fields: BlocklistSyncJobService$onStartJob$1.label, BlocklistRepository.INSTANCE, BlocklistSyncJobService$onStartJob$1.this$0, WaitingCallNotificationManager.INSTANCE, BlocklistSyncJobService.Companion, BlocklistSyncJobService$onStartJob$1.$params, Unit.INSTANCE
-        // -> IntrinsicsKt.getCOROUTINE_SUSPENDED()
-        // -> IllegalStateException.<init>()
-        // -> ResultKt.throwOnFailure()
-        // -> BlocklistSyncJobService.getApplicationContext()
-        // -> Intrinsics.checkNotNullExpressionValue()
-        // -> BlocklistRepository.loadAndSyncBlockedNumbers()
-        // -> WaitingCallNotificationManager.reconcileBlockedCallsFromCallLog()
-        // -> BlocklistSyncJobService$Companion.schedule()
-        // -> BlocklistSyncJobService.jobFinished()
-        TODO("Decoded 48 Dalvik instructions; see decompiled_bytecode/")
-    }
-
 }
